@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Credicel POS - V8.1 Dinámico</title>
+    <title>Credicel POS - V8.2 Seguridad</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .product-card { transition: all 0.2s; border: 2px solid #e2e8f0; cursor: pointer; user-select: none; }
@@ -53,13 +53,14 @@
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[4px]">Acceso Administrativo</p>
             </div>
             <div class="text-left space-y-4">
-                <select id="user-select" class="w-full p-4 border-2 rounded-xl font-bold bg-gray-50">
-                    <option value="Said">Said</option>
-                    <option value="Vendedor 1">Vendedor 1</option>
+                <label class="block text-[10px] font-black text-slate-400 uppercase ml-2">Seleccionar Usuario</label>
+                <select id="user-select" class="w-full p-4 border-2 rounded-xl font-bold bg-gray-50 text-blue-900">
+                    <option value="">Cargando usuarios...</option>
                 </select>
-                <input id="user-pin" type="password" maxlength="4" inputmode="numeric" class="w-full p-4 border-2 rounded-xl text-center text-2xl tracking-[10px] font-bold bg-gray-50" placeholder="****">
+                <label class="block text-[10px] font-black text-slate-400 uppercase ml-2">Ingresar PIN</label>
+                <input id="user-pin" type="password" maxlength="6" inputmode="numeric" class="w-full p-4 border-2 rounded-xl text-center text-2xl tracking-[10px] font-bold bg-gray-50" placeholder="****">
             </div>
-            <button onclick="intentarEntrar()" class="w-full mt-8 blue-gradient text-white font-black py-4 rounded-xl shadow-lg uppercase transition">Entrar</button>
+            <button onclick="intentarEntrar()" class="w-full mt-8 blue-gradient text-white font-black py-4 rounded-xl shadow-lg uppercase transition active:scale-95">Entrar al Sistema</button>
         </div>
     </div>
 
@@ -103,13 +104,13 @@
 
     <script>
         // URL DE TU APPS SCRIPT ACTUALIZADA
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbymF5hQZgQnlhUXUm3CeF5LDql6jWGf3K9kVf_xvBADJwU6tQQjfrG-PwowgIznhhE6jQ/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3csNB3HvCuaqUP-0d0zo_Z_9sHrKTtr8QY811jp-DgviIg9e807AsBV85UnTJUGQegg/exec";
         
         let PRODUCTOS = []; 
+        let LISTA_USUARIOS = [];
         let carrito = []; 
         let vendedorActivo = "";
         
-        // MEMORIA LOCAL
         let ventasAcumuladasDia = JSON.parse(localStorage.getItem('ventasCredicel')) || {};
         let gastosDelDia = JSON.parse(localStorage.getItem('gastosCredicel')) || [];
 
@@ -118,29 +119,56 @@
             localStorage.setItem('gastosCredicel', JSON.stringify(gastosDelDia));
         }
 
+        // CARGA INICIAL DE USUARIOS (AL ABRIR LA PÁGINA)
+        window.onload = async () => {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "Cargando Usuarios...";
+            try {
+                const res = await fetch(WEB_APP_URL + "?getUsers=true");
+                const data = await res.json();
+                LISTA_USUARIOS = data;
+                const select = document.getElementById('user-select');
+                if(LISTA_USUARIOS.length > 0) {
+                    select.innerHTML = LISTA_USUARIOS.map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('');
+                } else {
+                    select.innerHTML = `<option value="">Error: Sin Usuarios</option>`;
+                }
+            } catch (e) {
+                alert("Error crítico: No se pudo conectar con la hoja de Usuarios.");
+            }
+            document.getElementById('loading-overlay').style.display = 'none';
+        };
+
         async function cargarProductos() {
             document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "Sincronizando Inventario...";
             try {
                 const res = await fetch(WEB_APP_URL + "?getProducts=true");
                 const data = await res.json();
-                if(data && data.length > 0) {
-                    PRODUCTOS = data;
-                }
+                PRODUCTOS = data;
+                PRODUCTOS.push({id:'REP', n:'REPARACION', p:0}, {id:'GAS', n:'GASTO', p:0});
+                pintarProductos();
             } catch (e) {
-                console.log("Usando backup de productos...");
-                PRODUCTOS = [
-                    {id:'CA01', n:'MICA', p:40}, {id:'CA02', n:'MICA 9D', p:90}, {id:'CA03', n:'MICA PRIV', p:150},
-                    {id:'CA04', n:'CABLE V8', p:75}, {id:'CA05', n:'CABLE C', p:75}, {id:'CA06', n:'CABLE IP', p:75},
-                    {id:'CA07', n:'CARGADOR V8', p:125}, {id:'CA08', n:'CARGADOR C', p:125}, {id:'CA09', n:'CARGADOR IP', p:125},
-                    {id:'CA10', n:'CUBO USB', p:120}, {id:'CA13', n:'BOCINA', p:180}, {id:'CA20', n:'AUD BT', p:350}
-                ];
+                alert("Error al cargar productos.");
             }
-            // Agregar siempre funciones especiales
-            if(!PRODUCTOS.find(p => p.id === 'REP')) PRODUCTOS.push({id:'REP', n:'REPARACION', p:0});
-            if(!PRODUCTOS.find(p => p.id === 'GAS')) PRODUCTOS.push({id:'GAS', n:'GASTO', p:0});
-            
-            pintarProductos();
             document.getElementById('loading-overlay').style.display = 'none';
+        }
+
+        function intentarEntrar() {
+            const nombreSel = document.getElementById('user-select').value;
+            const pinIngresado = document.getElementById('user-pin').value;
+            const usuario = LISTA_USUARIOS.find(u => u.nombre === nombreSel);
+
+            if (usuario && usuario.pin.toString() === pinIngresado) {
+                vendedorActivo = nombreSel;
+                document.getElementById('label-vendedor').innerText = vendedorActivo;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'flex';
+                cargarProductos(); 
+            } else {
+                alert("❌ PIN INCORRECTO. Acceso denegado.");
+                document.getElementById('user-pin').value = "";
+            }
         }
 
         function toggleCorte() {
@@ -156,23 +184,13 @@
                 let v = ventasAcumuladasDia[id]; totalV += v.total;
                 htmlV += `<div class="flex justify-between border-b py-2 italic font-black"><span>${v.cant}x <span class="text-blue-600">${id}</span></span><span>$${v.total.toFixed(2)}</span></div>`;
             }
-            listaV.innerHTML = htmlV || "<p class='text-center py-4 opacity-30 text-xs uppercase'>Sin ventas registradas</p>";
-            let htmlG = "<p class='text-[10px] uppercase underline mb-1 text-red-400 font-black'>Egresos:</p>";
+            listaV.innerHTML = htmlV || "<p class='text-center py-4 opacity-30 text-[10px] uppercase'>No hay ventas en este turno</p>";
+            let htmlG = "<p class='text-[10px] uppercase underline mb-1 text-red-400 font-black'>Egresos registrados:</p>";
             gastosDelDia.forEach(g => { totalG += g.monto; htmlG += `<div class="flex justify-between italic text-red-500"><span>- ${g.concepto}</span><span>$${g.monto.toFixed(2)}</span></div>`; });
             listaG.innerHTML = gastosDelDia.length > 0 ? htmlG : "";
             document.getElementById('resumen-ventas').innerText = "$" + totalV.toFixed(2);
             document.getElementById('resumen-gastos').innerText = "-$" + totalG.toFixed(2);
             document.getElementById('corte-monto').innerText = "$" + (totalV - totalG).toFixed(2);
-        }
-
-        function intentarEntrar() {
-            if(document.getElementById('user-pin').value.length >= 4) {
-                vendedorActivo = document.getElementById('user-select').value;
-                document.getElementById('label-vendedor').innerText = vendedorActivo;
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-app').style.display = 'flex';
-                cargarProductos(); 
-            } else { alert("PIN Requerido (4 dígitos)"); }
         }
 
         function pintarProductos() {
@@ -189,7 +207,7 @@
         function clickProducto(id, n, p) {
             if(id === 'GAS') {
                 const con = prompt("CONCEPTO DEL GASTO:"); if(!con) return;
-                const mon = prompt("MONTO DEL GASTO:"); const monNum = parseFloat(mon);
+                const mon = prompt("MONTO:"); const monNum = parseFloat(mon);
                 if(!isNaN(monNum) && monNum > 0) registrarGastoServidor(con, monNum);
             } else if(id === 'REP') {
                 const m = prompt("MONTO REPARACIÓN:"); const mNum = parseFloat(m);
@@ -202,13 +220,12 @@
             new Image().src = WEB_APP_URL + "?tipo=GASTO&user=" + encodeURIComponent(vendedorActivo) + "&concepto=" + encodeURIComponent(concepto) + "&monto=" + monto;
             setTimeout(() => {
                 gastosDelDia.push({concepto, monto}); saveMemory();
-                alert("GASTO REGISTRADO");
+                alert("✅ GASTO GUARDADO EN EXCEL");
                 document.getElementById('loading-overlay').style.display = 'none';
             }, 1000);
         }
 
         function agregar(id, n, p) { carrito.push({id, n, p}); actualizarCarrito(); }
-        
         function actualizarCarrito() {
             document.getElementById('lista-carrito').innerHTML = carrito.map((item, i) => `
                 <div class="flex justify-between items-center bg-white p-2 rounded-lg border-l-4 border-blue-600 shadow-sm shrink-0">
@@ -222,7 +239,6 @@
         function irACobrar() { if(carrito.length > 0) { document.getElementById('modal-cobro').style.display = 'flex'; } }
         function cerrarCobro() { document.getElementById('modal-cobro').style.display = 'none'; }
         function quickPay(val) { document.getElementById('monto-pagado').value = val; actualizarCambio(); }
-        
         function actualizarCambio() {
             const t = parseFloat(document.getElementById('total-venta').innerText);
             const p = parseFloat(document.getElementById('monto-pagado').value) || 0;
@@ -233,40 +249,31 @@
             const btn = document.getElementById('btn-finalizar'); btn.disabled = true;
             document.getElementById('loading-overlay').style.display = 'flex';
             
-            // AGRUPACIÓN PARA EXCEL Y MEMORIA
             const agrupado = {};
             carrito.forEach(item => {
                 if(!agrupado[item.id]) { agrupado[item.id] = { codigo: item.id, cantidad: 0, total: 0 }; }
                 agrupado[item.id].cantidad += 1;
                 agrupado[item.id].total += item.p;
-
-                // Memoria Sidebar
                 if(!ventasAcumuladasDia[item.id]) { ventasAcumuladasDia[item.id] = { cant: 0, total: 0 }; }
                 ventasAcumuladasDia[item.id].cant += 1;
                 ventasAcumuladasDia[item.id].total += item.p;
             });
             saveMemory();
 
-            const itemsFinales = Object.values(agrupado).map(i => ({
-                codigo: i.codigo,
-                cantidad: i.cantidad,
-                precio: i.total
-            }));
-
+            const itemsFinales = Object.values(agrupado).map(i => ({ codigo: i.codigo, cantidad: i.cantidad, precio: i.total }));
             new Image().src = WEB_APP_URL + "?user=" + encodeURIComponent(vendedorActivo) + "&items=" + encodeURIComponent(JSON.stringify(itemsFinales));
             
             setTimeout(() => {
-                alert("REGISTRADO CON ÉXITO");
+                alert("✅ VENTA REGISTRADA");
                 carrito = []; actualizarCarrito(); cerrarCobro();
                 document.getElementById('loading-overlay').style.display = 'none';
                 btn.disabled = false;
-                document.getElementById('monto-pagado').value = "";
             }, 1000);
         }
 
         function ejecutarCorte() {
             const real = document.getElementById('corte-monto').innerText;
-            if(confirm(`¿Deseas CERRAR TURNO?\nEfectivo Real en Caja: ${real}`)) {
+            if(confirm(`¿CERRAR TURNO?\nEfectivo Real: ${real}`)) {
                 localStorage.removeItem('ventasCredicel');
                 localStorage.removeItem('gastosCredicel');
                 window.location.reload();
@@ -275,3 +282,4 @@
     </script>
 </body>
 </html>
+
