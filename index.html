@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Credicel POS - V8.2 Seguridad</title>
+    <title>Credicel POS - V9.2 Layout Fijo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .product-card { transition: all 0.2s; border: 2px solid #e2e8f0; cursor: pointer; user-select: none; }
@@ -16,6 +16,10 @@
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         #loading-overlay { display: none; }
+        
+        /* Ajuste para que el carrito no empuje el botón de cobrar fuera de la pantalla */
+        .carrito-container { display: flex; flex-direction: column; height: 100%; }
+        .lista-productos-scroll { flex: 1; overflow-y: auto; }
     </style>
 </head>
 <body class="bg-slate-50 font-sans h-screen flex flex-col overflow-hidden">
@@ -26,7 +30,7 @@
 
     <div id="sidebar-corte" class="sidebar closed fixed inset-y-0 left-0 bg-white z-[250] shadow-2xl flex flex-col p-6 border-r-4 border-blue-900">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-blue-900 uppercase italic underline decoration-yellow-400">Resumen de Turno</h2>
+            <h2 class="text-xl font-black text-blue-900 uppercase italic underline decoration-yellow-400">Corte en la Nube</h2>
             <button onclick="toggleCorte()" class="text-slate-400 text-3xl font-bold">&times;</button>
         </div>
         <div class="flex-1 overflow-y-auto mb-4 border-b custom-scroll">
@@ -50,17 +54,15 @@
         <div class="max-w-md w-full border p-8 rounded-3xl shadow-2xl bg-white">
             <div class="mb-6">
                 <div style="font-size: 2.5rem; font-weight: 900; color: #1e3a8a;">CREDI<span style="color: #facc15;">CEL</span></div>
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[4px]">Acceso Administrativo</p>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[4px]">Sincronización Nube</p>
             </div>
             <div class="text-left space-y-4">
-                <label class="block text-[10px] font-black text-slate-400 uppercase ml-2">Seleccionar Usuario</label>
                 <select id="user-select" class="w-full p-4 border-2 rounded-xl font-bold bg-gray-50 text-blue-900">
-                    <option value="">Cargando usuarios...</option>
+                    <option value="">Cargando empleados...</option>
                 </select>
-                <label class="block text-[10px] font-black text-slate-400 uppercase ml-2">Ingresar PIN</label>
                 <input id="user-pin" type="password" maxlength="6" inputmode="numeric" class="w-full p-4 border-2 rounded-xl text-center text-2xl tracking-[10px] font-bold bg-gray-50" placeholder="****">
             </div>
-            <button onclick="intentarEntrar()" class="w-full mt-8 blue-gradient text-white font-black py-4 rounded-xl shadow-lg uppercase transition active:scale-95">Entrar al Sistema</button>
+            <button onclick="intentarEntrar()" class="w-full mt-8 blue-gradient text-white font-black py-4 rounded-xl shadow-lg uppercase transition">Entrar</button>
         </div>
     </div>
 
@@ -72,16 +74,23 @@
             </div>
             <div class="text-right"><div class="font-black text-xl tracking-tighter">CREDI<span class="text-yellow-400">CEL</span></div></div>
         </header>
+        
         <div class="flex flex-1 overflow-hidden">
             <main class="flex-1 p-4 overflow-y-auto bg-white custom-scroll">
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3" id="grid-productos"></div>
             </main>
-            <aside class="w-72 md:w-80 lg:w-96 bg-slate-100 border-l flex flex-col shadow-xl">
-                <div class="p-4 bg-white border-b font-black text-blue-900 uppercase text-[10px] shrink-0">Venta Nueva</div>
-                <div id="lista-carrito" class="flex-1 overflow-y-auto p-3 space-y-2 font-bold uppercase italic text-xs custom-scroll"></div>
-                <div class="p-4 bg-white border-t-2 space-y-3 shrink-0">
-                    <div class="flex justify-between items-end"><span class="font-bold text-slate-400 text-[10px]">TOTAL VENTA</span><span class="text-3xl font-black text-blue-900">$<span id="total-venta">0.00</span></span></div>
-                    <button onclick="irACobrar()" class="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-xl uppercase active:bg-green-700">Cobrar</button>
+
+            <aside class="w-72 md:w-80 lg:w-96 bg-slate-100 border-l flex flex-col shadow-xl overflow-hidden">
+                <div class="p-4 bg-white border-b font-black text-blue-900 uppercase text-[10px] shrink-0 italic">Carrito de Venta</div>
+                
+                <div id="lista-carrito" class="lista-productos-scroll p-2 space-y-2 font-bold uppercase italic text-[11px] custom-scroll"></div>
+                
+                <div class="p-4 bg-white border-t-2 space-y-3 shrink-0 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+                    <div class="flex justify-between items-end">
+                        <span class="font-bold text-slate-400 text-[10px]">TOTAL</span>
+                        <span class="text-3xl font-black text-blue-900">$<span id="total-venta">0.00</span></span>
+                    </div>
+                    <button onclick="irACobrar()" class="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-xl uppercase active:bg-green-700 transition-colors">Cobrar</button>
                 </div>
             </aside>
         </div>
@@ -103,72 +112,51 @@
     </div>
 
     <script>
-        // URL DE TU APPS SCRIPT ACTUALIZADA
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3csNB3HvCuaqUP-0d0zo_Z_9sHrKTtr8QY811jp-DgviIg9e807AsBV85UnTJUGQegg/exec";
         
         let PRODUCTOS = []; 
         let LISTA_USUARIOS = [];
         let carrito = []; 
         let vendedorActivo = "";
-        
-        let ventasAcumuladasDia = JSON.parse(localStorage.getItem('ventasCredicel')) || {};
-        let gastosDelDia = JSON.parse(localStorage.getItem('gastosCredicel')) || [];
+        let ventasAcumuladasDia = {};
+        let gastosDelDia = [];
 
-        function saveMemory() {
-            localStorage.setItem('ventasCredicel', JSON.stringify(ventasAcumuladasDia));
-            localStorage.setItem('gastosCredicel', JSON.stringify(gastosDelDia));
-        }
-
-        // CARGA INICIAL DE USUARIOS (AL ABRIR LA PÁGINA)
         window.onload = async () => {
             document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('loading-text').innerText = "Cargando Usuarios...";
             try {
                 const res = await fetch(WEB_APP_URL + "?getUsers=true");
-                const data = await res.json();
-                LISTA_USUARIOS = data;
-                const select = document.getElementById('user-select');
-                if(LISTA_USUARIOS.length > 0) {
-                    select.innerHTML = LISTA_USUARIOS.map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('');
-                } else {
-                    select.innerHTML = `<option value="">Error: Sin Usuarios</option>`;
-                }
-            } catch (e) {
-                alert("Error crítico: No se pudo conectar con la hoja de Usuarios.");
-            }
+                LISTA_USUARIOS = await res.json();
+                document.getElementById('user-select').innerHTML = LISTA_USUARIOS.map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('');
+            } catch (e) { alert("Error de conexión"); }
             document.getElementById('loading-overlay').style.display = 'none';
         };
 
-        async function cargarProductos() {
-            document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('loading-text').innerText = "Sincronizando Inventario...";
-            try {
-                const res = await fetch(WEB_APP_URL + "?getProducts=true");
-                const data = await res.json();
-                PRODUCTOS = data;
-                PRODUCTOS.push({id:'REP', n:'REPARACION', p:0}, {id:'GAS', n:'GASTO', p:0});
-                pintarProductos();
-            } catch (e) {
-                alert("Error al cargar productos.");
-            }
-            document.getElementById('loading-overlay').style.display = 'none';
-        }
-
-        function intentarEntrar() {
+        async function intentarEntrar() {
             const nombreSel = document.getElementById('user-select').value;
             const pinIngresado = document.getElementById('user-pin').value;
             const usuario = LISTA_USUARIOS.find(u => u.nombre === nombreSel);
 
             if (usuario && usuario.pin.toString() === pinIngresado) {
                 vendedorActivo = nombreSel;
-                document.getElementById('label-vendedor').innerText = vendedorActivo;
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-app').style.display = 'flex';
-                cargarProductos(); 
-            } else {
-                alert("❌ PIN INCORRECTO. Acceso denegado.");
-                document.getElementById('user-pin').value = "";
-            }
+                document.getElementById('loading-overlay').style.display = 'flex';
+                document.getElementById('loading-text').innerText = "Sincronizando Turno...";
+                try {
+                    const resP = await fetch(WEB_APP_URL + "?getProducts=true");
+                    PRODUCTOS = await resP.json();
+                    PRODUCTOS.push({id:'REP', n:'REPARACION', p:0}, {id:'GAS', n:'GASTO', p:0});
+                    pintarProductos();
+
+                    const resC = await fetch(WEB_APP_URL + "?getLiveCorte=true&user=" + encodeURIComponent(vendedorActivo));
+                    const corte = await resC.json();
+                    ventasAcumuladasDia = corte.ventas;
+                    gastosDelDia = corte.gastos;
+
+                    document.getElementById('label-vendedor').innerText = vendedorActivo;
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'flex';
+                } catch (e) { alert("Error de sincronización"); }
+                document.getElementById('loading-overlay').style.display = 'none';
+            } else { alert("PIN Incorrecto"); }
         }
 
         function toggleCorte() {
@@ -182,11 +170,11 @@
             let totalV = 0, totalG = 0, htmlV = "";
             for (let id in ventasAcumuladasDia) {
                 let v = ventasAcumuladasDia[id]; totalV += v.total;
-                htmlV += `<div class="flex justify-between border-b py-2 italic font-black"><span>${v.cant}x <span class="text-blue-600">${id}</span></span><span>$${v.total.toFixed(2)}</span></div>`;
+                htmlV += `<div class="flex justify-between border-b py-2 italic font-black text-[11px]"><span>${v.cant}x <span class="text-blue-600">${id}</span></span><span>$${v.total.toFixed(2)}</span></div>`;
             }
-            listaV.innerHTML = htmlV || "<p class='text-center py-4 opacity-30 text-[10px] uppercase'>No hay ventas en este turno</p>";
-            let htmlG = "<p class='text-[10px] uppercase underline mb-1 text-red-400 font-black'>Egresos registrados:</p>";
-            gastosDelDia.forEach(g => { totalG += g.monto; htmlG += `<div class="flex justify-between italic text-red-500"><span>- ${g.concepto}</span><span>$${g.monto.toFixed(2)}</span></div>`; });
+            listaV.innerHTML = htmlV || "<p class='text-center py-4 opacity-30 text-[10px]'>Sin ventas</p>";
+            let htmlG = "<p class='text-[10px] uppercase underline mb-1 text-red-400 font-black'>Gastos:</p>";
+            gastosDelDia.forEach(g => { totalG += g.monto; htmlG += `<div class="flex justify-between italic text-red-500 text-[11px]"><span>- ${g.concepto}</span><span>$${g.monto.toFixed(2)}</span></div>`; });
             listaG.innerHTML = gastosDelDia.length > 0 ? htmlG : "";
             document.getElementById('resumen-ventas').innerText = "$" + totalV.toFixed(2);
             document.getElementById('resumen-gastos').innerText = "-$" + totalG.toFixed(2);
@@ -194,23 +182,21 @@
         }
 
         function pintarProductos() {
-            const grid = document.getElementById('grid-productos');
-            grid.innerHTML = PRODUCTOS.map(p => `
+            document.getElementById('grid-productos').innerHTML = PRODUCTOS.map(p => `
                 <div onclick="clickProducto('${p.id}', '${p.n}', ${p.p})" class="product-card bg-white p-3 rounded-2xl text-center shadow-sm flex flex-col justify-between h-28 ${p.id==='REP' ? 'rep-card' : ''} ${p.id==='GAS' ? 'gas-card' : ''}">
                     <p class="text-blue-600 font-black text-lg ${p.id==='GAS' ? 'text-red-600' : ''}">${p.id}</p>
                     <p class="text-[8px] font-bold text-slate-400 uppercase flex-1 flex items-center justify-center leading-tight">${p.n}</p>
                     <p class="text-blue-900 font-black text-sm">${(p.id==='REP' || p.id==='GAS') ? 'VAR' : '$'+p.p}</p>
-                </div>
-            `).join('');
+                </div>`).join('');
         }
 
         function clickProducto(id, n, p) {
             if(id === 'GAS') {
-                const con = prompt("CONCEPTO DEL GASTO:"); if(!con) return;
-                const mon = prompt("MONTO:"); const monNum = parseFloat(mon);
+                const con = prompt("¿Concepto?"); if(!con) return;
+                const mon = prompt("¿Monto?"); const monNum = parseFloat(mon);
                 if(!isNaN(monNum) && monNum > 0) registrarGastoServidor(con, monNum);
             } else if(id === 'REP') {
-                const m = prompt("MONTO REPARACIÓN:"); const mNum = parseFloat(m);
+                const m = prompt("¿Monto?"); const mNum = parseFloat(m);
                 if(!isNaN(mNum) && mNum > 0) agregar(id, n, mNum);
             } else { agregar(id, n, p); }
         }
@@ -219,24 +205,34 @@
             document.getElementById('loading-overlay').style.display = 'flex';
             new Image().src = WEB_APP_URL + "?tipo=GASTO&user=" + encodeURIComponent(vendedorActivo) + "&concepto=" + encodeURIComponent(concepto) + "&monto=" + monto;
             setTimeout(() => {
-                gastosDelDia.push({concepto, monto}); saveMemory();
-                alert("✅ GASTO GUARDADO EN EXCEL");
+                gastosDelDia.push({concepto, monto});
+                alert("✅ Gasto registrado");
                 document.getElementById('loading-overlay').style.display = 'none';
             }, 1000);
         }
 
         function agregar(id, n, p) { carrito.push({id, n, p}); actualizarCarrito(); }
+        
         function actualizarCarrito() {
             document.getElementById('lista-carrito').innerHTML = carrito.map((item, i) => `
-                <div class="flex justify-between items-center bg-white p-2 rounded-lg border-l-4 border-blue-600 shadow-sm shrink-0">
-                    <span class="truncate w-32">${item.n}</span>
-                    <div class="flex items-center gap-2"><span>$${item.p}</span><button onclick="eliminar(${i})" class="text-red-500 font-black px-2">×</button></div>
+                <div class="flex items-center justify-between bg-white p-2 rounded-lg border-l-4 border-blue-600 shadow-sm overflow-hidden">
+                    <div class="flex flex-col flex-1 min-w-0 pr-2">
+                        <span class="truncate text-blue-900">${item.n}</span>
+                        <span class="text-[9px] text-slate-400">${item.id}</span>
+                    </div>
+                    <div class="flex items-center gap-3 shrink-0">
+                        <span class="text-blue-700 font-bold">$${item.p}</span>
+                        <button onclick="eliminar(${i})" class="bg-red-50 text-red-500 w-8 h-8 rounded-full flex items-center justify-center font-black text-lg active:bg-red-500 active:text-white transition-colors">×</button>
+                    </div>
                 </div>`).join('');
             document.getElementById('total-venta').innerText = carrito.reduce((s, i) => s + i.p, 0).toFixed(2);
+            // Hacer scroll automático al final cuando se agrega un producto
+            const container = document.getElementById('lista-carrito');
+            container.scrollTop = container.scrollHeight;
         }
 
         function eliminar(i) { carrito.splice(i, 1); actualizarCarrito(); }
-        function irACobrar() { if(carrito.length > 0) { document.getElementById('modal-cobro').style.display = 'flex'; } }
+        function irACobrar() { if(carrito.length > 0) document.getElementById('modal-cobro').style.display = 'flex'; }
         function cerrarCobro() { document.getElementById('modal-cobro').style.display = 'none'; }
         function quickPay(val) { document.getElementById('monto-pagado').value = val; actualizarCambio(); }
         function actualizarCambio() {
@@ -248,38 +244,29 @@
         async function finalizarVenta() {
             const btn = document.getElementById('btn-finalizar'); btn.disabled = true;
             document.getElementById('loading-overlay').style.display = 'flex';
-            
             const agrupado = {};
             carrito.forEach(item => {
-                if(!agrupado[item.id]) { agrupado[item.id] = { codigo: item.id, cantidad: 0, total: 0 }; }
-                agrupado[item.id].cantidad += 1;
-                agrupado[item.id].total += item.p;
-                if(!ventasAcumuladasDia[item.id]) { ventasAcumuladasDia[item.id] = { cant: 0, total: 0 }; }
-                ventasAcumuladasDia[item.id].cant += 1;
-                ventasAcumuladasDia[item.id].total += item.p;
+                if(!agrupado[item.id]) agrupado[item.id] = { codigo: item.id, cantidad: 0, total: 0 };
+                agrupado[item.id].cantidad += 1; agrupado[item.id].total += item.p;
+                if(!ventasAcumuladasDia[item.id]) ventasAcumuladasDia[item.id] = { cant: 0, total: 0 };
+                ventasAcumuladasDia[item.id].cant += 1; ventasAcumuladasDia[item.id].total += item.p;
             });
-            saveMemory();
-
             const itemsFinales = Object.values(agrupado).map(i => ({ codigo: i.codigo, cantidad: i.cantidad, precio: i.total }));
             new Image().src = WEB_APP_URL + "?user=" + encodeURIComponent(vendedorActivo) + "&items=" + encodeURIComponent(JSON.stringify(itemsFinales));
-            
             setTimeout(() => {
-                alert("✅ VENTA REGISTRADA");
+                alert("✅ Registrado");
                 carrito = []; actualizarCarrito(); cerrarCobro();
                 document.getElementById('loading-overlay').style.display = 'none';
                 btn.disabled = false;
+                document.getElementById('monto-pagado').value = "";
             }, 1000);
         }
 
         function ejecutarCorte() {
-            const real = document.getElementById('corte-monto').innerText;
-            if(confirm(`¿CERRAR TURNO?\nEfectivo Real: ${real}`)) {
-                localStorage.removeItem('ventasCredicel');
-                localStorage.removeItem('gastosCredicel');
+            if(confirm(`¿CERRAR TURNO?\nSe reiniciará la sesión.`)) {
                 window.location.reload();
             }
         }
     </script>
 </body>
 </html>
-
