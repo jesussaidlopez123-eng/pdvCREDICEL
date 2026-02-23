@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Credicel POS - V9.2 Layout Fijo</title>
+    <title>Credicel POS - V9.3 Blindado</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .product-card { transition: all 0.2s; border: 2px solid #e2e8f0; cursor: pointer; user-select: none; }
@@ -17,9 +17,10 @@
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         #loading-overlay { display: none; }
         
-        /* Ajuste para que el carrito no empuje el botón de cobrar fuera de la pantalla */
-        .carrito-container { display: flex; flex-direction: column; height: 100%; }
-        .lista-productos-scroll { flex: 1; overflow-y: auto; }
+        /* SOLUCIÓN AL BOTÓN DE COBRAR: Layout Fijo */
+        .aside-container { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+        .carrito-scroll { flex: 1; overflow-y: auto; }
+        .pie-cobro-fijo { shrink-0; border-top: 2px solid #e2e8f0; background: white; padding: 1rem; }
     </style>
 </head>
 <body class="bg-slate-50 font-sans h-screen flex flex-col overflow-hidden">
@@ -74,23 +75,22 @@
             </div>
             <div class="text-right"><div class="font-black text-xl tracking-tighter">CREDI<span class="text-yellow-400">CEL</span></div></div>
         </header>
-        
         <div class="flex flex-1 overflow-hidden">
             <main class="flex-1 p-4 overflow-y-auto bg-white custom-scroll">
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3" id="grid-productos"></div>
             </main>
-
-            <aside class="w-72 md:w-80 lg:w-96 bg-slate-100 border-l flex flex-col shadow-xl overflow-hidden">
+            
+            <aside class="w-72 md:w-80 lg:w-96 bg-slate-100 border-l aside-container shadow-xl">
                 <div class="p-4 bg-white border-b font-black text-blue-900 uppercase text-[10px] shrink-0 italic">Carrito de Venta</div>
                 
-                <div id="lista-carrito" class="lista-productos-scroll p-2 space-y-2 font-bold uppercase italic text-[11px] custom-scroll"></div>
+                <div id="lista-carrito" class="carrito-scroll p-2 space-y-2 font-bold uppercase italic text-[11px] custom-scroll"></div>
                 
-                <div class="p-4 bg-white border-t-2 space-y-3 shrink-0 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
-                    <div class="flex justify-between items-end">
-                        <span class="font-bold text-slate-400 text-[10px]">TOTAL</span>
+                <div class="pie-cobro-fijo">
+                    <div class="flex justify-between items-end mb-3">
+                        <span class="font-bold text-slate-400 text-[10px]">TOTAL VENTA</span>
                         <span class="text-3xl font-black text-blue-900">$<span id="total-venta">0.00</span></span>
                     </div>
-                    <button onclick="irACobrar()" class="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-xl uppercase active:bg-green-700 transition-colors">Cobrar</button>
+                    <button onclick="irACobrar()" class="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-xl uppercase active:bg-green-700">Cobrar</button>
                 </div>
             </aside>
         </div>
@@ -98,15 +98,10 @@
 
     <div id="modal-cobro" class="fixed inset-0 bg-slate-900/90 hidden items-center justify-center p-4 z-[200] backdrop-blur-sm">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center">
-            <h2 class="text-xl font-black mb-6 text-blue-900 uppercase italic underline decoration-yellow-400">Finalizar Cobro</h2>
-            <div class="grid grid-cols-3 gap-2 mb-4">
-                <button onclick="quickPay(100)" class="bg-slate-100 py-3 rounded-xl font-black text-slate-500">$100</button>
-                <button onclick="quickPay(200)" class="bg-slate-100 py-3 rounded-xl font-black text-slate-500">$200</button>
-                <button onclick="quickPay(500)" class="bg-slate-100 py-3 rounded-xl font-black text-slate-500">$500</button>
-            </div>
-            <input type="number" id="monto-pagado" oninput="actualizarCambio()" class="w-full p-4 border-2 rounded-2xl text-center text-3xl font-black text-blue-900 mb-4" placeholder="0.00">
-            <div class="p-5 bg-yellow-400 rounded-2xl mb-6 shadow-inner"><p class="text-[9px] font-black uppercase text-blue-900 opacity-60">Cambio:</p><p class="text-4xl font-black text-blue-900">$ <span id="cambio-texto">0.00</span></p></div>
-            <button id="btn-finalizar" onclick="finalizarVenta()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase shadow-lg text-sm">Registrar Venta</button>
+            <h2 class="text-xl font-black mb-6 text-blue-900 uppercase">Cobrar</h2>
+            <input type="number" id="monto-pagado" oninput="actualizarCambio()" class="w-full p-4 border-2 rounded-2xl text-center text-3xl font-black mb-4" placeholder="0.00">
+            <div class="p-5 bg-yellow-400 rounded-2xl mb-6 shadow-inner"><p class="text-4xl font-black text-blue-900">$ <span id="cambio-texto">0.00</span></p></div>
+            <button id="btn-finalizar" onclick="finalizarVenta()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase shadow-lg">Registrar</button>
             <button onclick="cerrarCobro()" class="text-slate-400 font-bold uppercase text-[9px] mt-4">Regresar</button>
         </div>
     </div>
@@ -127,7 +122,7 @@
                 const res = await fetch(WEB_APP_URL + "?getUsers=true");
                 LISTA_USUARIOS = await res.json();
                 document.getElementById('user-select').innerHTML = LISTA_USUARIOS.map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('');
-            } catch (e) { alert("Error de conexión"); }
+            } catch (e) { alert("Error al cargar usuarios. Revisa internet."); }
             document.getElementById('loading-overlay').style.display = 'none';
         };
 
@@ -141,20 +136,27 @@
                 document.getElementById('loading-overlay').style.display = 'flex';
                 document.getElementById('loading-text').innerText = "Sincronizando Turno...";
                 try {
+                    // Cargar Productos
                     const resP = await fetch(WEB_APP_URL + "?getProducts=true");
                     PRODUCTOS = await resP.json();
                     PRODUCTOS.push({id:'REP', n:'REPARACION', p:0}, {id:'GAS', n:'GASTO', p:0});
                     pintarProductos();
 
+                    // Cargar Corte (Manejo de errores mejorado aquí)
                     const resC = await fetch(WEB_APP_URL + "?getLiveCorte=true&user=" + encodeURIComponent(vendedorActivo));
                     const corte = await resC.json();
-                    ventasAcumuladasDia = corte.ventas;
-                    gastosDelDia = corte.gastos;
+                    ventasAcumuladasDia = corte.ventas || {};
+                    gastosDelDia = corte.gastos || [];
 
                     document.getElementById('label-vendedor').innerText = vendedorActivo;
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('main-app').style.display = 'flex';
-                } catch (e) { alert("Error de sincronización"); }
+                } catch (e) { 
+                    console.error(e);
+                    alert("Aviso: No se pudo descargar el corte previo, pero puedes vender.");
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'flex';
+                }
                 document.getElementById('loading-overlay').style.display = 'none';
             } else { alert("PIN Incorrecto"); }
         }
@@ -206,7 +208,7 @@
             new Image().src = WEB_APP_URL + "?tipo=GASTO&user=" + encodeURIComponent(vendedorActivo) + "&concepto=" + encodeURIComponent(concepto) + "&monto=" + monto;
             setTimeout(() => {
                 gastosDelDia.push({concepto, monto});
-                alert("✅ Gasto registrado");
+                alert("✅ Registrado");
                 document.getElementById('loading-overlay').style.display = 'none';
             }, 1000);
         }
@@ -222,11 +224,10 @@
                     </div>
                     <div class="flex items-center gap-3 shrink-0">
                         <span class="text-blue-700 font-bold">$${item.p}</span>
-                        <button onclick="eliminar(${i})" class="bg-red-50 text-red-500 w-8 h-8 rounded-full flex items-center justify-center font-black text-lg active:bg-red-500 active:text-white transition-colors">×</button>
+                        <button onclick="eliminar(${i})" class="bg-red-50 text-red-500 w-8 h-8 rounded-full flex items-center justify-center font-black text-lg">×</button>
                     </div>
                 </div>`).join('');
             document.getElementById('total-venta').innerText = carrito.reduce((s, i) => s + i.p, 0).toFixed(2);
-            // Hacer scroll automático al final cuando se agrega un producto
             const container = document.getElementById('lista-carrito');
             container.scrollTop = container.scrollHeight;
         }
@@ -234,7 +235,7 @@
         function eliminar(i) { carrito.splice(i, 1); actualizarCarrito(); }
         function irACobrar() { if(carrito.length > 0) document.getElementById('modal-cobro').style.display = 'flex'; }
         function cerrarCobro() { document.getElementById('modal-cobro').style.display = 'none'; }
-        function quickPay(val) { document.getElementById('monto-pagado').value = val; actualizarCambio(); }
+        
         function actualizarCambio() {
             const t = parseFloat(document.getElementById('total-venta').innerText);
             const p = parseFloat(document.getElementById('monto-pagado').value) || 0;
@@ -258,14 +259,11 @@
                 carrito = []; actualizarCarrito(); cerrarCobro();
                 document.getElementById('loading-overlay').style.display = 'none';
                 btn.disabled = false;
-                document.getElementById('monto-pagado').value = "";
             }, 1000);
         }
 
         function ejecutarCorte() {
-            if(confirm(`¿CERRAR TURNO?\nSe reiniciará la sesión.`)) {
-                window.location.reload();
-            }
+            if(confirm("¿CERRAR TURNO?\nSe reiniciará la sesión.")) window.location.reload();
         }
     </script>
 </body>
