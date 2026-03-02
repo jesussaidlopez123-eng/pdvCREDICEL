@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Credicel POS - V10 Híbrida</title>
+    <title>Credicel POS - V10.2 Híbrida</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .product-card { transition: all 0.2s; border: 2px solid #e2e8f0; cursor: pointer; user-select: none; }
@@ -18,12 +17,14 @@
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         #loading-overlay { display: none; }
         
-        /* Layout Fijo para Tablet - Asegura que el botón de cobrar siempre se vea */
+        /* FIX DE PANTALLA PARA TABLET */
         .app-layout { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         .main-container { flex: 1; display: flex; overflow: hidden; }
+        
+        /* CARRITO DINÁMICO: Lista con scroll y pie fijo */
         .carrito-aside { display: flex; flex-direction: column; height: 100%; width: 350px; background: #f8fafc; border-left: 2px solid #e2e8f0; }
         .carrito-lista { flex: 1; overflow-y: auto; padding: 10px; }
-        .carrito-footer { shrink-0; background: white; border-top: 3px solid #1e3a8a; padding: 15px; }
+        .carrito-footer { shrink-0; background: white; border-top: 3px solid #1e3a8a; padding: 15px; box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 <body class="bg-slate-50 font-sans overflow-hidden">
@@ -77,7 +78,9 @@
 
             <aside class="carrito-aside">
                 <div class="p-3 bg-slate-200 text-blue-900 font-black uppercase text-[10px] italic">Carrito de Venta</div>
+                
                 <div id="lista-carrito" class="carrito-lista space-y-2 custom-scroll"></div>
+                
                 <div class="carrito-footer">
                     <div class="flex justify-between items-end mb-3">
                         <span class="font-bold text-slate-400 text-[10px] uppercase">Total</span>
@@ -109,8 +112,6 @@
         let LISTA_USUARIOS = [];
         let carrito = []; 
         let vendedorActivo = "";
-        
-        // MEMORIA HÍBRIDA
         let ventasAcumuladasDia = {};
         let gastosDelDia = [];
 
@@ -148,8 +149,7 @@
                 document.getElementById('loading-overlay').style.display = 'flex';
                 document.getElementById('loading-text').innerText = "Sincronizando...";
                 
-                // Primero cargar memoria local por si no hay internet
-                loadLocalMemory();
+                loadLocalMemory(); // Cargar memoria local primero
 
                 try {
                     const resP = await fetch(WEB_APP_URL + "?getProducts=true");
@@ -157,7 +157,7 @@
                     PRODUCTOS.push({id:'REP', n:'REPARACION', p:0}, {id:'GAS', n:'GASTO', p:0});
                     pintarProductos();
 
-                    // Intentar actualizar desde la nube (si falla, nos quedamos con la local)
+                    // SINCRONIZACIÓN FORZADA CON LA NUBE
                     const resC = await fetch(WEB_APP_URL + "?getLiveCorte=true&user=" + encodeURIComponent(vendedorActivo));
                     const corte = await resC.json();
                     if(corte) {
@@ -165,7 +165,7 @@
                         gastosDelDia = corte.gastos || [];
                         saveLocalMemory();
                     }
-                } catch (e) { console.log("Usando memoria local por falla de red."); }
+                } catch (e) { console.log("Usando respaldo local."); }
 
                 document.getElementById('label-vendedor').innerText = vendedorActivo;
                 document.getElementById('login-screen').style.display = 'none';
@@ -220,7 +220,7 @@
             setTimeout(() => {
                 gastosDelDia.push({concepto, monto});
                 saveLocalMemory();
-                alert("✅ Gasto registrado");
+                alert("✅ Registrado");
                 document.getElementById('loading-overlay').style.display = 'none';
             }, 1000);
         }
