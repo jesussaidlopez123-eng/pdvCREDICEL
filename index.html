@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Credicel POS - V10.2 Híbrida</title>
+    <title>Credicel POS - V10.3 Ultra-Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .product-card { transition: all 0.2s; border: 2px solid #e2e8f0; cursor: pointer; user-select: none; }
@@ -15,49 +15,43 @@
         .sidebar.closed { transform: translateX(-100%); }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* FIX TOTAL DE PANTALLA */
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+        .app-layout { height: 100vh; display: flex; flex-direction: column; }
+        .main-container { flex: 1; display: flex; min-height: 0; } /* min-height: 0 es clave para el scroll */
+        
+        /* CARRITO SIN FALLAS */
+        .carrito-aside { display: flex; flex-direction: column; width: 320px; background: #f8fafc; border-left: 2px solid #e2e8f0; height: 100%; }
+        .carrito-lista { flex: 1; overflow-y: auto; padding: 8px; min-height: 0; }
+        .carrito-footer { shrink-0; background: white; border-top: 4px solid #1e3a8a; padding: 12px; }
+        
         #loading-overlay { display: none; }
-        
-        /* FIX DE PANTALLA PARA TABLET */
-        .app-layout { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        .main-container { flex: 1; display: flex; overflow: hidden; }
-        
-        /* CARRITO DINÁMICO: Lista con scroll y pie fijo */
-        .carrito-aside { display: flex; flex-direction: column; height: 100%; width: 350px; background: #f8fafc; border-left: 2px solid #e2e8f0; }
-        .carrito-lista { flex: 1; overflow-y: auto; padding: 10px; }
-        .carrito-footer { shrink-0; background: white; border-top: 3px solid #1e3a8a; padding: 15px; box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
-<body class="bg-slate-50 font-sans overflow-hidden">
+<body class="bg-slate-50 font-sans">
 
     <div id="loading-overlay" class="fixed inset-0 bg-blue-900/50 z-[300] flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white p-5 rounded-2xl font-black text-blue-900 animate-pulse uppercase" id="loading-text">Sincronizando...</div>
+        <div class="bg-white p-5 rounded-2xl font-black text-blue-900 animate-pulse uppercase">Sincronizando...</div>
     </div>
 
     <div id="sidebar-corte" class="sidebar closed fixed inset-y-0 left-0 bg-white z-[250] shadow-2xl flex flex-col p-6 border-r-4 border-blue-900">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-blue-900 uppercase italic">Resumen de Turno</h2>
-            <button onclick="toggleCorte()" class="text-slate-400 text-3xl font-bold">&times;</button>
+        <div class="flex justify-between items-center mb-6 text-blue-900 font-black uppercase italic">
+            <h2>Resumen</h2>
+            <button onclick="toggleCorte()" class="text-3xl">&times;</button>
         </div>
-        <div class="flex-1 overflow-y-auto mb-4 custom-scroll">
-            <div id="lista-detalle-corte" class="space-y-2 text-sm font-bold text-slate-600"></div>
-            <div id="lista-gastos-corte" class="mt-4 pt-4 border-t-2 border-dashed border-red-200 space-y-2 text-sm font-bold text-red-600"></div>
+        <div class="flex-1 overflow-y-auto custom-scroll" id="lista-detalle-corte"></div>
+        <div class="mt-4 p-4 bg-blue-900 rounded-xl text-center">
+            <p id="corte-monto" class="text-3xl font-black text-yellow-400">$0.00</p>
         </div>
-        <div class="bg-blue-900 p-4 rounded-2xl text-white shadow-lg text-center mb-4">
-            <p id="corte-monto" class="text-4xl font-black text-yellow-400">$0.00</p>
-        </div>
-        <button onclick="ejecutarCorte()" class="w-full bg-red-600 text-white font-black py-4 rounded-xl uppercase">Cerrar Caja y Salir</button>
+        <button onclick="ejecutarCorte()" class="w-full mt-4 bg-red-600 text-white font-black py-3 rounded-xl uppercase">Cerrar Turno</button>
     </div>
 
     <div id="login-screen" class="fixed inset-0 bg-white z-[100] flex items-center justify-center p-6 text-center">
         <div class="max-w-md w-full border p-8 rounded-3xl shadow-2xl bg-white">
-            <div class="mb-6">
-                <div style="font-size: 2.5rem; font-weight: 900; color: #1e3a8a;">CREDI<span style="color: #facc15;">CEL</span></div>
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[4px]">Acceso Administrativo</p>
-            </div>
-            <div class="text-left space-y-4">
-                <select id="user-select" class="w-full p-4 border-2 rounded-xl font-bold bg-gray-50 text-blue-900">
-                    <option value="">Cargando empleados...</option>
-                </select>
+            <div class="mb-6 font-black text-4xl text-blue-900 italic">CREDI<span class="text-yellow-400">CEL</span></div>
+            <div class="space-y-4">
+                <select id="user-select" class="w-full p-4 border-2 rounded-xl font-bold bg-gray-50 text-blue-900"></select>
                 <input id="user-pin" type="password" maxlength="6" inputmode="numeric" class="w-full p-4 border-2 rounded-xl text-center text-2xl tracking-[10px] font-bold bg-gray-50" placeholder="****">
             </div>
             <button onclick="intentarEntrar()" class="w-full mt-8 blue-gradient text-white font-black py-4 rounded-xl shadow-lg uppercase transition">Entrar</button>
@@ -65,48 +59,47 @@
     </div>
 
     <div id="main-app" class="hidden app-layout">
-        <header class="blue-gradient text-white p-3 flex justify-between items-center shadow-md shrink-0">
-            <button onclick="toggleCorte()" class="bg-yellow-400 text-blue-900 px-3 py-1 rounded-lg font-black text-[10px] uppercase shadow-md active:scale-90 transition">Ver Corte</button>
-            <div class="font-black text-lg tracking-tighter">CREDI<span class="text-yellow-400">CEL</span></div>
-            <span id="label-vendedor" class="font-bold uppercase text-[10px] border-l pl-4"></span>
+        <header class="blue-gradient text-white p-2 flex justify-between items-center shrink-0">
+            <button onclick="toggleCorte()" class="bg-yellow-400 text-blue-900 px-3 py-1 rounded-lg font-black text-[10px] uppercase shadow-md">Corte</button>
+            <div class="font-black text-base tracking-tighter">CREDI<span class="text-yellow-400">CEL</span></div>
+            <span id="label-vendedor" class="font-bold uppercase text-[10px] border-l pl-2"></span>
         </header>
 
         <div class="main-container">
-            <main class="flex-1 p-3 overflow-y-auto bg-white custom-scroll">
+            <main class="flex-1 p-2 overflow-y-auto bg-white custom-scroll">
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2" id="grid-productos"></div>
             </main>
 
             <aside class="carrito-aside">
-                <div class="p-3 bg-slate-200 text-blue-900 font-black uppercase text-[10px] italic">Carrito de Venta</div>
-                
+                <div class="p-2 bg-slate-200 text-blue-900 font-black uppercase text-[10px] italic shrink-0">Venta Actual</div>
                 <div id="lista-carrito" class="carrito-lista space-y-2 custom-scroll"></div>
                 
                 <div class="carrito-footer">
-                    <div class="flex justify-between items-end mb-3">
-                        <span class="font-bold text-slate-400 text-[10px] uppercase">Total</span>
-                        <span class="text-3xl font-black text-blue-900">$<span id="total-venta">0.00</span></span>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-bold text-slate-400 text-[10px] uppercase">Total:</span>
+                        <span class="text-2xl font-black text-blue-900">$<span id="total-venta">0.00</span></span>
                     </div>
-                    <button onclick="irACobrar()" class="w-full bg-green-600 text-white font-black py-5 rounded-2xl shadow-xl text-2xl uppercase active:bg-green-700 transition-all">Cobrar</button>
+                    <button onclick="irACobrar()" class="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg text-xl uppercase active:bg-green-700">Cobrar</button>
                 </div>
             </aside>
         </div>
     </div>
 
     <div id="modal-cobro" class="fixed inset-0 bg-slate-900/90 hidden items-center justify-center p-4 z-[200] backdrop-blur-sm">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center border-t-8 border-blue-900">
             <h2 class="text-xl font-black mb-4 text-blue-900 uppercase italic">Finalizar Cobro</h2>
             <input type="number" id="monto-pagado" oninput="actualizarCambio()" class="w-full p-4 border-2 rounded-2xl text-center text-3xl font-black mb-4" placeholder="0.00">
-            <div class="p-4 bg-yellow-400 rounded-2xl mb-6 shadow-inner text-blue-900">
+            <div class="p-4 bg-yellow-400 rounded-2xl mb-6 text-blue-900">
                 <p class="text-[10px] font-black uppercase opacity-60">Cambio:</p>
                 <p class="text-4xl font-black">$ <span id="cambio-texto">0.00</span></p>
             </div>
-            <button id="btn-finalizar" onclick="finalizarVenta()" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase shadow-lg text-lg active:scale-95 transition">Registrar Venta</button>
-            <button onclick="cerrarCobro()" class="text-slate-400 font-bold uppercase text-[10px] mt-5">Cerrar</button>
+            <button id="btn-finalizar" onclick="finalizarVenta()" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase shadow-lg text-lg">Registrar Venta</button>
+            <button onclick="cerrarCobro()" class="text-slate-400 font-bold uppercase text-[10px] mt-4">Regresar</button>
         </div>
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3csNB3HvCuaqUP-0d0zo_Z_9sHrKTtr8QY811jp-DgviIg9e807AsBV85UnTJUGQegg/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbymF5hQZgQnlhUXUm3CeF5LDql6jWGf3K9kVf_xvBADJwU6tQQjfrG-PwowgIznhhE6jQ/exec";
         
         let PRODUCTOS = []; 
         let LISTA_USUARIOS = [];
@@ -115,27 +108,13 @@
         let ventasAcumuladasDia = {};
         let gastosDelDia = [];
 
-        function saveLocalMemory() {
-            const data = { v: ventasAcumuladasDia, g: gastosDelDia, user: vendedorActivo, fecha: new Date().toDateString() };
-            localStorage.setItem('credicel_backup', JSON.stringify(data));
-        }
-
-        function loadLocalMemory() {
-            const saved = JSON.parse(localStorage.getItem('credicel_backup'));
-            const hoy = new Date().toDateString();
-            if(saved && saved.fecha === hoy && saved.user === vendedorActivo) {
-                ventasAcumuladasDia = saved.v || {};
-                gastosDelDia = saved.g || [];
-            }
-        }
-
         window.onload = async () => {
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
                 const res = await fetch(WEB_APP_URL + "?getUsers=true");
                 LISTA_USUARIOS = await res.json();
                 document.getElementById('user-select').innerHTML = LISTA_USUARIOS.map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('');
-            } catch (e) { alert("Error de conexión con el servidor."); }
+            } catch (e) { alert("Error de red."); }
             document.getElementById('loading-overlay').style.display = 'none';
         };
 
@@ -147,96 +126,80 @@
             if (usuario && usuario.pin.toString() === pinIngresado) {
                 vendedorActivo = nombreSel;
                 document.getElementById('loading-overlay').style.display = 'flex';
-                document.getElementById('loading-text').innerText = "Sincronizando...";
-                
-                loadLocalMemory(); // Cargar memoria local primero
-
                 try {
                     const resP = await fetch(WEB_APP_URL + "?getProducts=true");
                     PRODUCTOS = await resP.json();
                     PRODUCTOS.push({id:'REP', n:'REPARACION', p:0}, {id:'GAS', n:'GASTO', p:0});
                     pintarProductos();
 
-                    // SINCRONIZACIÓN FORZADA CON LA NUBE
                     const resC = await fetch(WEB_APP_URL + "?getLiveCorte=true&user=" + encodeURIComponent(vendedorActivo));
                     const corte = await resC.json();
-                    if(corte) {
-                        ventasAcumuladasDia = corte.ventas || {};
-                        gastosDelDia = corte.gastos || [];
-                        saveLocalMemory();
-                    }
-                } catch (e) { console.log("Usando respaldo local."); }
+                    ventasAcumuladasDia = corte.ventas || {};
+                    gastosDelDia = corte.gastos || [];
 
-                document.getElementById('label-vendedor').innerText = vendedorActivo;
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-app').classList.remove('hidden');
+                    document.getElementById('label-vendedor').innerText = vendedorActivo;
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('main-app').classList.remove('hidden');
+                } catch (e) { 
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('main-app').classList.remove('hidden');
+                }
                 document.getElementById('loading-overlay').style.display = 'none';
             } else { alert("PIN Incorrecto"); }
         }
 
-        function toggleCorte() {
-            document.getElementById('sidebar-corte').classList.toggle('closed');
-            pintarDetalleCorte();
-        }
+        function toggleCorte() { document.getElementById('sidebar-corte').classList.toggle('closed'); pintarDetalleCorte(); }
 
         function pintarDetalleCorte() {
             const listaV = document.getElementById('lista-detalle-corte');
-            const listaG = document.getElementById('lista-gastos-corte');
-            let totalV = 0, totalG = 0, htmlV = "";
+            let totalV = 0, totalG = 0, html = "";
             for (let id in ventasAcumuladasDia) {
                 let v = ventasAcumuladasDia[id]; totalV += v.total;
-                htmlV += `<div class="flex justify-between border-b py-2 italic font-black text-[11px]"><span>${v.cant}x <span class="text-blue-600">${id}</span></span><span>$${v.total.toFixed(2)}</span></div>`;
+                html += `<div class="flex justify-between border-b py-1 text-[11px]"><span>${v.cant}x ${id}</span><span>$${v.total.toFixed(2)}</span></div>`;
             }
-            listaV.innerHTML = htmlV || "<p class='text-center py-4 opacity-30 text-[10px] uppercase'>Sin ventas</p>";
-            let htmlG = "<p class='text-[10px] uppercase underline mb-1 text-red-400 font-black'>Gastos:</p>";
-            gastosDelDia.forEach(g => { totalG += g.monto; htmlG += `<div class="flex justify-between italic text-red-500 text-[11px]"><span>- ${g.concepto}</span><span>$${g.monto.toFixed(2)}</span></div>`; });
-            listaG.innerHTML = gastosDelDia.length > 0 ? htmlG : "";
+            gastosDelDia.forEach(g => { totalG += g.monto; html += `<div class="flex justify-between text-red-500 text-[11px]"><span>- ${g.concepto}</span><span>$${g.monto.toFixed(2)}</span></div>`; });
+            listaV.innerHTML = html || "<p class='text-center py-4 text-[10px] uppercase'>Vacío</p>";
             document.getElementById('corte-monto').innerText = "$" + (totalV - totalG).toFixed(2);
         }
 
         function pintarProductos() {
             document.getElementById('grid-productos').innerHTML = PRODUCTOS.map(p => `
                 <div onclick="clickProducto('${p.id}', '${p.n}', ${p.p})" class="product-card bg-white p-2 rounded-xl text-center shadow-sm flex flex-col justify-between h-24 ${p.id==='REP' ? 'rep-card' : ''} ${p.id==='GAS' ? 'gas-card' : ''}">
-                    <p class="text-blue-600 font-black text-lg ${p.id==='GAS' ? 'text-red-600' : ''}">${p.id}</p>
-                    <p class="text-[8px] font-bold text-slate-400 uppercase leading-tight">${p.n}</p>
-                    <p class="text-blue-900 font-black text-sm">${(p.id==='REP' || p.id==='GAS') ? 'VAR' : '$'+p.p}</p>
+                    <p class="text-blue-600 font-black text-sm">${p.id}</p>
+                    <p class="text-[7px] font-bold text-slate-400 uppercase leading-tight">${p.n}</p>
+                    <p class="text-blue-900 font-black text-xs">${(p.id==='REP' || p.id==='GAS') ? 'VAR' : '$'+p.p}</p>
                 </div>`).join('');
         }
 
         function clickProducto(id, n, p) {
             if(id === 'GAS') {
-                const con = prompt("¿Concepto del Gasto?"); if(!con) return;
-                const mon = prompt("¿Monto?"); const monNum = parseFloat(mon);
+                const con = prompt("¿Concepto?"); const mon = prompt("¿Monto?");
+                const monNum = parseFloat(mon);
                 if(!isNaN(monNum) && monNum > 0) registrarGastoServidor(con, monNum);
             } else if(id === 'REP') {
-                const m = prompt("¿Monto Reparación?"); const mNum = parseFloat(m);
+                const m = prompt("¿Monto?"); const mNum = parseFloat(m);
                 if(!isNaN(mNum) && mNum > 0) agregar(id, n, mNum);
             } else { agregar(id, n, p); }
         }
 
         async function registrarGastoServidor(concepto, monto) {
-            document.getElementById('loading-overlay').style.display = 'flex';
             new Image().src = WEB_APP_URL + "?tipo=GASTO&user=" + encodeURIComponent(vendedorActivo) + "&concepto=" + encodeURIComponent(concepto) + "&monto=" + monto;
-            setTimeout(() => {
-                gastosDelDia.push({concepto, monto});
-                saveLocalMemory();
-                alert("✅ Registrado");
-                document.getElementById('loading-overlay').style.display = 'none';
-            }, 1000);
+            gastosDelDia.push({concepto, monto});
+            alert("✅ Registrado");
         }
 
         function agregar(id, n, p) { carrito.push({id, n, p}); actualizarCarrito(); }
         
         function actualizarCarrito() {
             document.getElementById('lista-carrito').innerHTML = carrito.map((item, i) => `
-                <div class="flex items-center justify-between bg-white p-2 rounded-lg border-l-4 border-blue-600 shadow-sm overflow-hidden">
-                    <div class="flex flex-col flex-1 min-w-0 pr-1 text-left">
-                        <span class="truncate text-blue-900 font-black text-[11px] leading-none">${item.n}</span>
+                <div class="flex items-center justify-between bg-white p-2 rounded-lg border-l-4 border-blue-600 shadow-sm overflow-hidden text-[10px]">
+                    <div class="flex flex-col flex-1 min-w-0 pr-1">
+                        <span class="truncate text-blue-900 font-black">${item.n}</span>
                         <span class="text-[8px] text-slate-400">${item.id}</span>
                     </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <span class="text-blue-700 font-black text-[11px]">$${item.p}</span>
-                        <button onclick="eliminar(${i})" class="bg-red-50 text-red-500 w-8 h-8 rounded-full flex items-center justify-center font-black">×</button>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold">$${item.p}</span>
+                        <button onclick="eliminar(${i})" class="text-red-500 font-black px-2 text-base">×</button>
                     </div>
                 </div>`).join('');
             document.getElementById('total-venta').innerText = carrito.reduce((s, i) => s + i.p, 0).toFixed(2);
@@ -256,7 +219,6 @@
         async function finalizarVenta() {
             const btn = document.getElementById('btn-finalizar'); btn.disabled = true;
             document.getElementById('loading-overlay').style.display = 'flex';
-            
             const agrupado = {};
             carrito.forEach(item => {
                 if(!agrupado[item.id]) agrupado[item.id] = { codigo: item.id, cantidad: 0, total: 0 };
@@ -264,11 +226,8 @@
                 if(!ventasAcumuladasDia[item.id]) ventasAcumuladasDia[item.id] = { cant: 0, total: 0 };
                 ventasAcumuladasDia[item.id].cant += 1; ventasAcumuladasDia[item.id].total += item.p;
             });
-            saveLocalMemory();
-
             const itemsFinales = Object.values(agrupado).map(i => ({ codigo: i.codigo, cantidad: i.cantidad, precio: i.total }));
             new Image().src = WEB_APP_URL + "?user=" + encodeURIComponent(vendedorActivo) + "&items=" + encodeURIComponent(JSON.stringify(itemsFinales));
-            
             setTimeout(() => {
                 alert("✅ Registrado");
                 carrito = []; actualizarCarrito(); cerrarCobro();
@@ -277,12 +236,7 @@
             }, 1000);
         }
 
-        function ejecutarCorte() {
-            if(confirm("¿CERRAR TURNO?\nSe limpiará la memoria local.")) {
-                localStorage.removeItem('credicel_backup');
-                window.location.reload();
-            }
-        }
+        function ejecutarCorte() { if(confirm("¿SALIR?")) window.location.reload(); }
     </script>
 </body>
 </html>
