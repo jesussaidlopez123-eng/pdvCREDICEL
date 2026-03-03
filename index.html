@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Credicel POS - V13.9.5 Matriz Pro</title>
+    <title>Credicel POS - V13.9.6 Matriz Conectada</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .product-card { transition: all 0.1s; border: 1px solid #e2e8f0; cursor: pointer; user-select: none; }
@@ -43,18 +43,18 @@
     <div id="loading-overlay" class="fixed inset-0 bg-blue-900/50 z-[400] flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-6 rounded-3xl font-black text-blue-900 animate-pulse uppercase text-center shadow-2xl">
             ACTUALIZANDO MATRIZ...<br>
-            <span class="text-[10px] opacity-60 text-blue-700 tracking-widest">Sincronizando inventarios</span>
+            <span class="text-[10px] opacity-60 text-blue-700 tracking-widest uppercase">Verificando conexión</span>
         </div>
     </div>
 
     <div id="sidebar-corte" class="sidebar closed shadow-2xl p-6">
         <div class="flex justify-between items-center mb-6 shrink-0">
-            <h2 class="font-black text-blue-900 uppercase text-lg italic border-b-4 border-yellow-400 tracking-tight">Resumen del Turno</h2>
+            <h2 class="font-black text-blue-900 uppercase text-lg italic border-b-4 border-yellow-400">Resumen del Turno</h2>
             <button onclick="toggleCorte()" class="text-4xl font-bold text-slate-300 hover:text-red-500 transition">&times;</button>
         </div>
         <div id="lista-detalle-corte" class="flex-1 overflow-y-auto text-sm space-y-2 font-bold text-slate-600 custom-scroll"></div>
         <div class="shrink-0 pt-4 border-t border-slate-100">
-            <div class="p-4 bg-blue-900 rounded-2xl text-center text-yellow-400 font-black text-3xl mb-4 shadow-inner" id="corte-monto">$0.00</div>
+            <div class="p-4 bg-blue-900 rounded-2xl text-center text-yellow-400 font-black text-3xl mb-4 shadow-lg" id="corte-monto">$0.00</div>
             <button onclick="ejecutarCorte()" class="w-full bg-red-600 text-white font-black py-5 rounded-2xl uppercase text-sm shadow-lg active:scale-95 transition-all">Cerrar Turno y Registrar Corte X</button>
         </div>
     </div>
@@ -63,20 +63,20 @@
         <div class="max-w-sm w-full border p-10 rounded-[2.5rem] shadow-2xl bg-white text-center">
             <div class="mb-8 font-black text-5xl text-blue-900 italic tracking-tighter">CREDI<span class="text-yellow-400">CEL</span></div>
             <div class="space-y-4 text-left font-bold">
-                <label class="text-[10px] uppercase text-slate-400 ml-2">Vendedor</label>
+                <label class="text-[10px] uppercase text-slate-400 ml-2 font-black">Vendedor</label>
                 <select id="user-select" class="w-full p-4 border-2 rounded-2xl bg-slate-50 text-blue-900 outline-none focus:border-blue-500 transition"></select>
                 
-                <label class="text-[10px] uppercase text-slate-400 ml-2">Sucursal</label>
+                <label class="text-[10px] uppercase text-slate-400 ml-2 font-black">Sucursal de Venta</label>
                 <select id="sucursal-select" class="w-full p-4 border-2 rounded-2xl bg-slate-50 text-blue-900 outline-none focus:border-blue-500 transition">
                     <option value="Navojoa">Navojoa</option>
                     <option value="Huatabampo">Huatabampo</option>
                     <option value="Bodega">Bodega</option>
                 </select>
                 
-                <label class="text-[10px] uppercase text-slate-400 ml-2">PIN de Seguridad</label>
-                <input id="user-pin" type="password" maxlength="6" inputmode="numeric" class="w-full p-4 border-2 rounded-2xl text-center text-3xl tracking-[12px] focus:border-blue-500 outline-none transition" placeholder="****">
+                <label class="text-[10px] uppercase text-slate-400 ml-2 font-black">PIN de Acceso</label>
+                <input id="user-pin" type="password" maxlength="6" inputmode="numeric" class="w-full p-4 border-2 rounded-2xl text-center text-3xl tracking-[12px] focus:border-blue-500 outline-none" placeholder="****">
                 
-                <button onclick="intentarEntrar()" class="w-full blue-gradient text-white font-black py-5 rounded-2xl shadow-xl uppercase mt-4 hover:brightness-110 active:scale-95 transition-all">Iniciar Sesión</button>
+                <button onclick="intentarEntrar()" class="w-full blue-gradient text-white font-black py-5 rounded-2xl shadow-xl uppercase mt-4 active:scale-95 transition-all">Iniciar Turno</button>
             </div>
         </div>
     </div>
@@ -95,7 +95,7 @@
             </div>
             
             <div class="text-right">
-                <div id="label-vendedor" class="font-black uppercase text-[10px] leading-tight"></div>
+                <div id="label-vendedor" class="font-black uppercase text-[10px] leading-none"></div>
                 <div id="label-sucursal" class="font-bold text-yellow-400 text-[8px] uppercase tracking-widest"></div>
             </div>
         </header>
@@ -114,7 +114,7 @@
                     <button onclick="irACobrar()" class="w-full bg-green-500 text-white font-black py-4 rounded-2xl text-xl uppercase mb-2 border-b-4 border-green-700 shadow-lg active:scale-95 transition-all">COBRAR VENTA</button>
                     <div class="flex justify-between text-[9px] font-black italic">
                         <span class="uppercase opacity-60">Lista de cobro</span>
-                        <button onclick="carrito=[];actualizarCarrito()" class="underline text-yellow-400 hover:text-white">LIMPIAR TODO</button>
+                        <button onclick="carrito=[];actualizarCarrito()" class="underline text-yellow-400 hover:text-white uppercase">Limpiar</button>
                     </div>
                 </div>
                 <div id="lista-carrito" class="cart-items-scroll space-y-2 custom-scroll"></div>
@@ -122,32 +122,27 @@
         </div>
     </div>
 
-    <div id="modal-cobro" class="fixed inset-0 bg-slate-900/90 hidden items-center justify-center p-4 z-[200] backdrop-blur-sm">
-        <div class="bg-white rounded-[2.5rem] max-w-sm w-full p-8 text-center border-t-8 border-blue-900 shadow-2xl animate-fadeIn">
+    <div id="modal-cobro" class="fixed inset-0 bg-slate-900/90 hidden items-center justify-center p-4 z-[200]">
+        <div class="bg-white rounded-[2.5rem] max-w-sm w-full p-8 text-center border-t-8 border-blue-900 shadow-2xl">
             <h2 class="text-2xl font-black mb-6 text-blue-900 uppercase italic tracking-tighter">Finalizar Venta</h2>
-            
             <div class="grid grid-cols-3 gap-2 mb-6">
-                <button onclick="quickPay(100)" class="bg-slate-100 py-4 rounded-2xl font-black text-slate-500 hover:bg-blue-50 transition shadow-sm">$100</button>
-                <button onclick="quickPay(200)" class="bg-slate-100 py-4 rounded-2xl font-black text-slate-500 hover:bg-blue-50 transition shadow-sm">$200</button>
-                <button onclick="quickPay(500)" class="bg-slate-100 py-4 rounded-2xl font-black text-slate-500 hover:bg-blue-50 transition shadow-sm">$500</button>
+                <button onclick="quickPay(100)" class="bg-slate-100 py-4 rounded-2xl font-black text-slate-500 shadow-sm hover:bg-blue-50 transition">$100</button>
+                <button onclick="quickPay(200)" class="bg-slate-100 py-4 rounded-2xl font-black text-slate-500 shadow-sm hover:bg-blue-50 transition">$200</button>
+                <button onclick="quickPay(500)" class="bg-slate-100 py-4 rounded-2xl font-black text-slate-500 shadow-sm hover:bg-blue-50 transition">$500</button>
             </div>
-
-            <label class="text-[10px] uppercase text-slate-400 font-black block mb-2 text-left ml-2">Efectivo Recibido:</label>
-            <input type="number" id="monto-pagado" oninput="actualizarCambio()" class="w-full p-5 border-2 rounded-[1.5rem] text-center text-4xl font-black mb-6 outline-none shadow-inner border-slate-100 focus:border-blue-500" placeholder="0.00">
-            
+            <input type="number" id="monto-pagado" oninput="actualizarCambio()" class="w-full p-5 border-2 rounded-[1.5rem] text-center text-4xl font-black mb-6 outline-none shadow-inner focus:border-blue-500" placeholder="0.00">
             <div class="p-6 bg-yellow-400 rounded-[1.5rem] mb-8 text-blue-900 font-black shadow-lg">
                 <p class="text-[11px] uppercase opacity-70">Cambio para el cliente:</p>
                 <p class="text-5xl tracking-tighter">$ <span id="cambio-texto">0.00</span></p>
             </div>
-
-            <button id="btn-finalizar" onclick="finalizarVenta()" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase text-xl shadow-xl hover:brightness-110 active:scale-95 transition-all">REGISTRAR EN MATRIZ</button>
-            <button onclick="cerrarCobro()" class="text-slate-400 font-bold uppercase text-[11px] mt-6 block mx-auto underline hover:text-blue-900 transition">Volver al carrito</button>
+            <button id="btn-finalizar" onclick="finalizarVenta()" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase text-xl shadow-xl hover:brightness-110 active:scale-95 transition-all">CONFIRMAR MATRIZ</button>
+            <button onclick="cerrarCobro()" class="text-slate-400 font-bold uppercase text-[11px] mt-6 block mx-auto underline">Regresar</button>
         </div>
     </div>
 
     <script>
-        // URL ACTUALIZADA SEGÚN SOLICITUD
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwL6EvG4sMNiaT_xqjjT98TPC0oiMHviH87sO7e2oqQOIL7vouIAHo3GHQr6q4dYdf4tw/exec";
+        // NUEVA URL ACTUALIZADA
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyDBr2H0OVs3DIgG_WGzF_2PYYmUbr5hcpOCQl48qSmvSa03mVHNRnosZOb1gjQZgoQcQ/exec";
         
         let LISTA_USUARIOS = [], PRODUCTOS = [], carrito = [], vendedorActivo = "", sucursalActiva = "";
         let ventasAcumuladasDia = {}, totalAcumuladoTurno = 0;
@@ -158,7 +153,9 @@
                 const res = await fetch(WEB_APP_URL + "?action=getUsers");
                 LISTA_USUARIOS = await res.json();
                 document.getElementById('user-select').innerHTML = LISTA_USUARIOS.map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('');
-            } catch (e) { alert("ERROR CRÍTICO: No se pudo conectar con la MATRIZ."); }
+            } catch (e) { 
+                document.getElementById('loading-overlay').innerHTML = `<div class="bg-white p-8 rounded-2xl font-black text-red-600">ERROR DE CONEXIÓN CON MATRIZ<br><span class="text-xs text-slate-400">Verifica la implementación del Apps Script</span></div>`;
+            }
             document.getElementById('loading-overlay').style.display = 'none';
         };
 
@@ -183,23 +180,19 @@
                     document.getElementById('label-sucursal').innerText = sucursalActiva;
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('main-app').classList.remove('hidden');
-                } catch (e) { alert("ERROR: Falla al descargar catálogo de MATRIZ."); }
+                } catch (e) { alert("ERROR AL CARGAR DATOS DE MATRIZ"); }
                 document.getElementById('loading-overlay').style.display = 'none';
-            } else { alert("PIN INCORRECTO: Acceso denegado."); }
+            } else { alert("PIN INCORRECTO"); }
         }
 
         async function enviarDatos(data) {
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
-                await fetch(WEB_APP_URL, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    body: JSON.stringify(data) 
-                });
+                await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
                 return true;
             } catch (e) {
                 console.error(e);
-                alert("ERROR DE RED: Intente de nuevo.");
+                alert("ERROR AL ENVIAR DATOS A MATRIZ.");
                 return false;
             } finally {
                 document.getElementById('loading-overlay').style.display = 'none';
@@ -214,18 +207,18 @@
             for (let id in ventasAcumuladasDia) {
                 let v = ventasAcumuladasDia[id]; total += v.total;
                 html += `<div class="flex justify-between border-b border-slate-50 py-3">
-                            <span class="uppercase tracking-tight">${v.cant}x <span class="text-blue-900 font-black">${id}</span></span>
+                            <span class="uppercase font-bold">${v.cant}x <span class="text-blue-900">${id}</span></span>
                             <span class="font-black text-slate-800">$${v.total.toFixed(2)}</span>
                          </div>`;
             }
             totalAcumuladoTurno = total;
-            lista.innerHTML = html || "<p class='text-center py-20 opacity-20 uppercase font-black tracking-widest'>Sin registros</p>";
+            lista.innerHTML = html || "<p class='text-center py-20 opacity-20 uppercase font-black tracking-widest'>Sin registros hoy</p>";
             document.getElementById('corte-monto').innerText = "$" + total.toFixed(2);
         }
 
         function pintarProductos() {
             document.getElementById('grid-productos').innerHTML = PRODUCTOS.map(p => `
-                <div onclick="clickProducto('${p.id}', '${p.n}', ${p.p})" class="product-card bg-white p-3 rounded-[1.25rem] text-center shadow-sm flex flex-col justify-between h-28 border border-slate-100 hover:border-blue-200 transition-all">
+                <div onclick="clickProducto('${p.id}', '${p.n}', ${p.p})" class="product-card bg-white p-3 rounded-[1.25rem] text-center shadow-sm flex flex-col justify-between h-28 border border-slate-100">
                     <p class="text-blue-600 font-black text-sm uppercase tracking-tighter">${p.id}</p>
                     <p class="text-[8px] font-bold text-slate-400 uppercase leading-none overflow-hidden h-4">${p.n}</p>
                     <p class="text-blue-900 font-black text-sm">${(p.id==='REP' || p.id==='GAS') ? 'VAR' : '$'+p.p}</p>
@@ -238,10 +231,10 @@
                 const mon = prompt("MONTO DEL GASTO:");
                 if(con && mon > 0) {
                     enviarDatos({ tipo: "GASTO", vendedor: vendedorActivo, sucursal: sucursalActiva, concepto: con, monto: parseFloat(mon) });
-                    alert("✅ GASTO ENVIADO A MATRIZ");
+                    alert("✅ GASTO REGISTRADO");
                 }
             } else if(id === 'REP') {
-                const m = prompt("VALOR DE LA REPARACIÓN:"); 
+                const m = prompt("VALOR DE REPARACIÓN:"); 
                 if(m > 0) agregar(id, n, parseFloat(m));
             } else { agregar(id, n, p); }
         }
@@ -295,7 +288,7 @@
             };
 
             if(await enviarDatos(data)) {
-                alert("✅ ACTUALIZADO EN MATRIZ\nInventario descontado correctamente.");
+                alert("✅ REGISTRADO EN MATRIZ");
                 carrito = []; actualizarCarrito(); cerrarCobro();
             }
         }
@@ -312,29 +305,29 @@
                 data.destino = prompt("UBICACIÓN DESTINO (Navojoa/Huatabampo/Bodega):");
                 if(!data.origen || !data.destino) return;
             } else {
-                data.ubicacion = prompt("UBICACIÓN DE AJUSTE (Navojoa/Huatabampo/Bodega):");
+                data.ubicacion = prompt("¿DÓNDE SE APLICA? (Navojoa/Huatabampo/Bodega):");
                 if(!data.ubicacion) return;
             }
             
-            if(await enviarDatos(data)) alert("✅ MATRIZ ACTUALIZADA: Stock sincronizado.");
+            if(await enviarDatos(data)) alert("✅ MATRIZ ACTUALIZADA");
         }
 
         async function modalEquipo() {
             const mod = prompt("MODELO DEL EQUIPO:"); 
             const imei = prompt("NÚMERO DE IMEI:");
             const num = prompt("NÚMERO ASIGNADO:"); 
-            const num2 = prompt("NÚMERO ADICIONAL:"); 
-            const nom = prompt("NOMBRE DEL CLIENTE:"); 
-            const eng = prompt("MONTO DE ENGANCHE:");
+            const num2 = prompt("NÚMERO 2:"); 
+            const nom = prompt("NOMBRE CLIENTE:"); 
+            const eng = prompt("MONTO ENGANCHE:");
             
             if(mod && imei) {
                 const data = { tipo: "EQUIPO", modelo: mod, imei: imei, numero: num, numero2: num2, nombre: nom, enganche: eng, sucursal: sucursalActiva };
-                if(await enviarDatos(data)) alert("✅ EQUIPO REGISTRADO EN MATRIZ");
+                if(await enviarDatos(data)) alert("✅ EQUIPO ENVIADO A MATRIZ");
             }
         }
 
         function ejecutarCorte() {
-            if(confirm("¿CERRAR TURNO?\nSe registrará el total $" + totalAcumuladoTurno + " en la base de datos y se reiniciará el sistema.")) {
+            if(confirm("¿CERRAR TURNO?\nSe enviará el reporte de $" + totalAcumuladoTurno + " a Matriz.")) {
                 enviarDatos({ 
                     tipo: "VENTA", 
                     vendedor: vendedorActivo, 
@@ -348,4 +341,3 @@
     </script>
 </body>
 </html>
-
