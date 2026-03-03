@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Credicel POS - V13.6 Máximo Control</title>
+    <title>Credicel POS - V13.7 Corte X Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .product-card { transition: all 0.1s; border: 1px solid #e2e8f0; cursor: pointer; user-select: none; }
@@ -21,24 +21,22 @@
         .cart-header-fixed { background: #1e3a8a; padding: 12px; color: white; shrink-0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 20; }
         .cart-items-scroll { flex: 1; overflow-y: auto; padding: 8px; -webkit-overflow-scrolling: touch; }
         #loading-overlay { display: none; }
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div id="loading-overlay" class="fixed inset-0 bg-blue-900/50 z-[300] flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white p-5 rounded-2xl font-black text-blue-900 animate-pulse uppercase">Sincronizando Matriz...</div>
+        <div class="bg-white p-5 rounded-2xl font-black text-blue-900 animate-pulse uppercase">Actualizando Matriz...</div>
     </div>
 
     <div id="sidebar-corte" class="sidebar closed shadow-2xl flex flex-col p-6">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="font-black text-blue-900 uppercase text-sm italic">Resumen del Turno</h2>
+            <h2 class="font-black text-blue-900 uppercase text-sm italic">Corte del Turno</h2>
             <button onclick="toggleCorte()" class="text-2xl font-bold">&times;</button>
         </div>
         <div id="lista-detalle-corte" class="flex-1 overflow-y-auto text-xs space-y-1 custom-scroll font-bold text-slate-600"></div>
         <div class="p-4 bg-blue-900 rounded-xl text-center text-yellow-400 font-black text-2xl mt-4 shadow-lg" id="corte-monto">$0.00</div>
-        <button onclick="ejecutarCorte()" class="w-full bg-red-600 text-white font-black py-4 rounded-xl mt-4 uppercase text-xs shadow-md active:scale-95">Cerrar Turno y Guardar Corte X</button>
+        <button onclick="ejecutarCorte()" class="w-full bg-red-600 text-white font-black py-4 rounded-xl mt-4 uppercase text-xs shadow-md active:scale-95">Cerrar Turno y Registrar Corte X</button>
     </div>
 
     <div id="login-screen" class="fixed inset-0 bg-white z-[100] flex items-center justify-center p-4">
@@ -52,7 +50,7 @@
                     <option value="Bodega">Bodega</option>
                 </select>
                 <input id="user-pin" type="password" maxlength="6" inputmode="numeric" class="w-full p-4 border rounded-xl text-center text-2xl tracking-[10px] bg-slate-50" placeholder="****">
-                <button onclick="intentarEntrar()" class="w-full blue-gradient text-white font-black py-4 rounded-xl shadow-lg uppercase mt-2">Iniciar Turno</button>
+                <button onclick="intentarEntrar()" class="w-full blue-gradient text-white font-black py-4 rounded-xl shadow-lg uppercase mt-2">Entrar</button>
             </div>
         </div>
     </div>
@@ -77,38 +75,38 @@
         </header>
 
         <div class="content-area">
-            <main class="grid-area custom-scroll">
+            <main class="grid-area">
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2" id="grid-productos"></div>
             </main>
 
             <aside class="cart-aside">
                 <div class="cart-header-fixed">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] uppercase font-bold opacity-80">Total Venta:</span>
+                        <span class="text-[10px] uppercase font-bold opacity-80 text-white">Total Venta:</span>
                         <span class="text-2xl font-black text-yellow-400">$<span id="total-venta">0.00</span></span>
                     </div>
                     <button onclick="irACobrar()" class="w-full bg-green-500 text-white font-black py-4 rounded-xl shadow-lg text-xl uppercase mb-2 border-b-4 border-green-700">COBRAR</button>
                 </div>
-                <div id="lista-carrito" class="cart-items-scroll space-y-2 custom-scroll"></div>
+                <div id="lista-carrito" class="cart-items-scroll space-y-2"></div>
             </aside>
         </div>
     </div>
 
     <div id="modal-cobro" class="fixed inset-0 bg-slate-900/90 hidden items-center justify-center p-4 z-[200]">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center border-t-8 border-blue-900">
-            <h2 class="text-xl font-black mb-4 text-blue-900 uppercase italic">Finalizar Cobro</h2>
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center">
+            <h2 class="text-xl font-black mb-4 text-blue-900 uppercase italic">Confirmar Cobro</h2>
             <div class="grid grid-cols-3 gap-2 mb-4">
                 <button onclick="quickPay(100)" class="bg-slate-100 py-3 rounded-xl font-black text-slate-500">$100</button>
                 <button onclick="quickPay(200)" class="bg-slate-100 py-3 rounded-xl font-black text-slate-500">$200</button>
                 <button onclick="quickPay(500)" class="bg-slate-100 py-3 rounded-xl font-black text-slate-500">$500</button>
             </div>
-            <input type="number" id="monto-pagado" oninput="actualizarCambio()" class="w-full p-4 border rounded-2xl text-center text-3xl font-black mb-4 outline-none" placeholder="0.00">
-            <div class="p-4 bg-yellow-400 rounded-2xl mb-6 text-blue-900 font-black">
+            <input type="number" id="monto-pagado" oninput="actualizarCambio()" class="w-full p-4 border rounded-2xl text-center text-3xl font-black mb-4" placeholder="0.00">
+            <div class="p-4 bg-yellow-400 rounded-2xl mb-6 text-blue-900 font-black text-center">
                 <p class="text-[10px] uppercase opacity-60">Cambio:</p>
                 <p class="text-4xl">$ <span id="cambio-texto">0.00</span></p>
             </div>
-            <button id="btn-finalizar" onclick="finalizarVenta()" class="w-full py-4 bg-blue-600 text-white rounded-xl font-black uppercase text-lg shadow-lg">REGISTRAR EN MATRIZ</button>
-            <button onclick="cerrarCobro()" class="text-slate-400 font-bold uppercase text-[10px] mt-4 block mx-auto underline">Regresar</button>
+            <button id="btn-finalizar" onclick="finalizarVenta()" class="w-full py-4 bg-blue-600 text-white rounded-xl font-black uppercase text-lg">REGISTRAR VENTA</button>
+            <button onclick="cerrarCobro()" class="text-slate-400 font-bold uppercase text-[10px] mt-4 block mx-auto">Regresar</button>
         </div>
     </div>
 
@@ -125,7 +123,7 @@
                 const res = await fetch(WEB_APP_URL + "?action=getUsers");
                 LISTA_USUARIOS = await res.json();
                 document.getElementById('user-select').innerHTML = LISTA_USUARIOS.map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('');
-            } catch (e) { alert("Error de red."); }
+            } catch (e) { alert("Error de servidor."); }
             document.getElementById('loading-overlay').style.display = 'none';
         };
 
@@ -151,7 +149,7 @@
                     document.getElementById('label-sucursal').innerText = sucursalActiva;
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('main-app').classList.remove('hidden');
-                } catch (e) { alert("Error cargando sistema."); }
+                } catch (e) { alert("Error al cargar productos."); }
                 document.getElementById('loading-overlay').style.display = 'none';
             } else { alert("PIN Incorrecto"); }
         }
@@ -169,7 +167,7 @@
                 html += `<div class="flex justify-between border-b py-1"><span>${v.cant}x ${id}</span><span>$${v.total.toFixed(2)}</span></div>`;
             }
             totalAcumuladoTurno = total;
-            lista.innerHTML = html || "<p class='text-center py-4 opacity-30'>SIN VENTAS</p>";
+            lista.innerHTML = html || "<p class='text-center py-4 opacity-30 uppercase'>Sin ventas</p>";
             document.getElementById('corte-monto').innerText = "$" + total.toFixed(2);
         }
 
@@ -196,9 +194,9 @@
         function actualizarCarrito() {
             document.getElementById('lista-carrito').innerHTML = carrito.map((item, i) => `
                 <div class="flex items-center justify-between bg-slate-50 p-2 rounded-lg border-l-4 border-blue-600 shadow-sm text-[10px] mb-1">
-                    <div class="flex-1 min-w-0 pr-1 text-left">
-                        <span class="truncate block text-blue-900 font-black uppercase">${item.n}</span>
-                        <span class="text-[8px] text-slate-400 font-bold">${item.id}</span>
+                    <div class="flex-1 min-w-0 pr-1 text-left font-bold">
+                        <span class="truncate block text-blue-900 uppercase">${item.n}</span>
+                        <span class="text-[8px] text-slate-400 font-black">${item.id}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="font-black text-blue-900">$${item.p}</span>
@@ -222,27 +220,26 @@
             const btn = document.getElementById('btn-finalizar'); btn.disabled = true;
             document.getElementById('loading-overlay').style.display = 'flex';
             
-            // AGRUPACIÓN PARA EL EXCEL
             const agrupado = {};
             carrito.forEach(item => {
                 if(!agrupado[item.id]) agrupado[item.id] = { codigo: item.id, cantidad: 0, precio: 0 };
                 agrupado[item.id].cantidad += 1;
                 agrupado[item.id].precio += item.p;
                 
-                // Acumular para el sidebar
                 if(!ventasAcumuladasDia[item.id]) ventasAcumuladasDia[item.id] = { cant: 0, total: 0 };
                 ventasAcumuladasDia[item.id].cant += 1;
                 ventasAcumuladasDia[item.id].total += item.p;
             });
 
             const itemsFinales = Object.values(agrupado);
-            const data = { tipo: "VENTA", vendedor: vendedorActivo, sucursal: sucursalActiva, items: itemsFinales };
+            // IMPORTANTE: CorteX se envía como string vacío en ventas normales
+            const data = { tipo: "VENTA", vendedor: vendedorActivo, sucursal: sucursalActiva, items: itemsFinales, corteX: "" };
             
             try {
                 await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) });
-                alert("✅ Venta Guardada");
+                alert("✅ Registrado");
                 carrito = []; actualizarCarrito(); cerrarCobro();
-            } catch (e) { alert("Error al registrar."); }
+            } catch (e) { alert("Error de conexión"); }
             
             document.getElementById('loading-overlay').style.display = 'none';
             btn.disabled = false;
@@ -251,7 +248,7 @@
         async function registrarVentaEspecial(tipo, info) {
             const data = { tipo: tipo, vendedor: vendedorActivo, sucursal: sucursalActiva, ...info };
             fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) });
-            alert("✅ Registrado.");
+            alert("✅ Hecho");
         }
 
         function ajusteInventario(modo) {
@@ -259,15 +256,17 @@
             let query = `?tipo=AJUSTE_INV&modo=${modo}&codigo=${cod}&cantidad=${cant}`;
 
             if(modo === "TRASPASO") {
-                const ori = prompt("ORIGEN (Navojoa/Huatabampo/Bodega):");
-                const des = prompt("DESTINO (Navojoa/Huatabampo/Bodega):");
-                query += `&origen=${ori}&destino=${des}`;
+                const ori = prompt("¿DE DÓNDE sale? (Navojoa/Huatabampo/Bodega):");
+                const des = prompt("¿A DÓNDE entra? (Navojoa/Huatabampo/Bodega):");
+                if(ori && des) query += `&origen=${ori}&destino=${des}`;
+                else return;
             } else {
                 const ub = prompt("UBICACIÓN (Navojoa/Huatabampo/Bodega):");
-                query += `&ubicacion=${ub}`;
+                if(ub) query += `&ubicacion=${ub}`;
+                else return;
             }
             new Image().src = WEB_APP_URL + query;
-            alert("Procesando ajuste...");
+            alert("✅ Ajuste enviado");
         }
 
         function modalEquipo() {
@@ -277,17 +276,19 @@
             if(mod && imei) {
                 const data = { tipo: "EQUIPO", modelo: mod, imei: imei, numero: num, nombre: nom, enganche: eng, sucursal: sucursalActiva };
                 fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) });
-                alert("Equipo enviado.");
+                alert("✅ Equipo registrado");
             }
         }
 
         function ejecutarCorte() {
-            if(confirm("¿CERRAR TURNO?\nSe enviará el Total del Corte a Matriz.")) {
-                // Enviar el total acumulado a la columna CORTE X
-                new Image().src = WEB_APP_URL + `?tipo=CIERRE_TURNO&sucursal=${sucursalActiva}&monto=${totalAcumuladoTurno}`;
+            if(confirm("¿CERRAR TURNO?\nSe registrará el total $" + totalAcumuladoTurno + " en la columna de CORTE X.")) {
+                // AQUÍ SE ENVÍA EL TOTAL DEL TURNO COMO CORTE X
+                const data = { tipo: "VENTA", vendedor: vendedorActivo, sucursal: sucursalActiva, items: [], corteX: totalAcumuladoTurno };
+                fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) });
                 setTimeout(() => { window.location.reload(); }, 1000);
             }
         }
     </script>
 </body>
 </html>
+
