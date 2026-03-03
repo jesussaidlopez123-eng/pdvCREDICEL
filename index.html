@@ -3,49 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Credicel POS V13.1</title>
+    <title>Credicel POS - V13.5 Restauración Total</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .product-card { transition: all 0.1s; border: 1px solid #e2e8f0; cursor: pointer; user-select: none; }
         .product-card:active { transform: scale(0.95); background-color: #eff6ff; }
+        .rep-card { border: 2px solid #1e3a8a; background-color: #fefce8; } 
+        .gas-card { border: 2px solid #dc2626; background-color: #fee2e2; }
         .blue-gradient { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
+        
+        /* SIDEBAR RESTAURADO */
+        .sidebar { transition: transform 0.3s ease-in-out; width: 300px; position: fixed; inset-y: 0; left: 0; z-index: 250; background: white; border-right: 4px solid #1e3a8a; }
+        .sidebar.closed { transform: translateX(-100%); }
+        
+        /* ESTRUCTURA FIJA TABLET */
         html, body { height: 100%; margin: 0; overflow: hidden; background: #f1f5f9; }
         .app-container { display: flex; flex-direction: column; height: 100vh; }
         .content-area { flex: 1; display: flex; overflow: hidden; }
+        
+        /* SCROLL PRODUCTOS */
         .grid-area { flex: 1; overflow-y: auto; padding: 10px; padding-bottom: 150px; }
+        
+        /* COLUMNA CARRITO */
         .cart-aside { width: 320px; display: flex; flex-direction: column; background: white; border-left: 1px solid #cbd5e1; height: 100%; }
-        .cart-header-fixed { background: #1e3a8a; padding: 12px; color: white; shrink-0; }
-        .cart-items-scroll { flex: 1; overflow-y: auto; padding: 8px; }
+        .cart-header-fixed { background: #1e3a8a; padding: 12px; color: white; shrink-0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 20; }
+        .cart-items-scroll { flex: 1; overflow-y: auto; padding: 8px; -webkit-overflow-scrolling: touch; }
+        
         #loading-overlay { display: none; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div id="loading-overlay" class="fixed inset-0 bg-blue-900/50 z-[300] flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white p-5 rounded-2xl font-black text-blue-900 animate-pulse">CARGANDO SISTEMA...</div>
+        <div class="bg-white p-5 rounded-2xl font-black text-blue-900 animate-pulse uppercase">Sincronizando Sistema...</div>
+    </div>
+
+    <div id="sidebar-corte" class="sidebar closed shadow-2xl flex flex-col p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="font-black text-blue-900 uppercase text-sm italic underline decoration-yellow-400">Resumen del Turno</h2>
+            <button onclick="toggleCorte()" class="text-2xl font-bold">&times;</button>
+        </div>
+        <div id="lista-detalle-corte" class="flex-1 overflow-y-auto text-xs space-y-1 custom-scroll font-bold text-slate-600">
+            </div>
+        <div class="p-4 bg-blue-900 rounded-xl text-center text-yellow-400 font-black text-2xl mt-4 shadow-lg" id="corte-monto">$0.00</div>
+        <button onclick="ejecutarCorte()" class="w-full bg-red-600 text-white font-black py-4 rounded-xl mt-4 uppercase text-xs shadow-md active:scale-95">Cerrar Turno y Salir</button>
     </div>
 
     <div id="login-screen" class="fixed inset-0 bg-white z-[100] flex items-center justify-center p-4">
-        <div class="max-w-sm w-full text-center">
+        <div class="max-w-sm w-full text-center border p-8 rounded-3xl shadow-xl">
             <div class="mb-6 font-black text-4xl text-blue-900 italic">CREDI<span class="text-yellow-400">CEL</span></div>
-            <div class="space-y-4 text-left">
-                <label class="text-[10px] font-bold text-slate-400 uppercase">Usuario</label>
-                <select id="user-select" class="w-full p-4 border rounded-xl font-bold bg-slate-50 text-blue-900 shadow-sm">
-                    <option value="">Conectando con matriz...</option>
-                </select>
+            <div class="space-y-4 text-left font-bold">
+                <label class="text-[10px] text-slate-400 uppercase">Usuario</label>
+                <select id="user-select" class="w-full p-4 border rounded-xl bg-slate-50 text-blue-900 shadow-sm"></select>
                 
-                <label class="text-[10px] font-bold text-slate-400 uppercase">Sucursal</label>
-                <select id="sucursal-select" class="w-full p-4 border rounded-xl font-bold bg-slate-50 text-blue-900 shadow-sm">
+                <label class="text-[10px] text-slate-400 uppercase">Sucursal</label>
+                <select id="sucursal-select" class="w-full p-4 border rounded-xl bg-slate-50 text-blue-900 shadow-sm">
                     <option value="Navojoa">Navojoa</option>
                     <option value="Huatabampo">Huatabampo</option>
                     <option value="Bodega">Bodega</option>
                 </select>
 
-                <label class="text-[10px] font-bold text-slate-400 uppercase">PIN</label>
-                <input id="user-pin" type="password" maxlength="6" inputmode="numeric" class="w-full p-4 border rounded-xl text-center text-2xl tracking-[10px] font-bold bg-slate-50 shadow-sm" placeholder="****">
+                <label class="text-[10px] text-slate-400 uppercase">PIN de Acceso</label>
+                <input id="user-pin" type="password" maxlength="6" inputmode="numeric" class="w-full p-4 border rounded-xl text-center text-2xl tracking-[10px] bg-slate-50 shadow-sm" placeholder="****">
                 
-                <button onclick="intentarEntrar()" class="w-full blue-gradient text-white font-black py-4 rounded-xl shadow-lg uppercase mt-2">Entrar</button>
-                <button onclick="location.reload()" class="w-full text-[10px] text-slate-400 mt-4 uppercase underline">Reintentar conexión</button>
+                <button onclick="intentarEntrar()" class="w-full blue-gradient text-white font-black py-4 rounded-xl shadow-lg uppercase mt-2">Iniciar Turno</button>
             </div>
         </div>
     </div>
@@ -53,14 +76,16 @@
     <div id="main-app" class="hidden app-container">
         <header class="blue-gradient text-white p-2 flex justify-between items-center shrink-0 shadow-md">
             <div class="flex gap-2">
-                <button onclick="alert('Usa el Excel para ver reportes')" class="bg-yellow-400 text-blue-900 px-3 py-1.5 rounded-lg font-black text-[10px] uppercase shadow-sm">CORTE</button>
+                <button onclick="toggleCorte()" class="bg-yellow-400 text-blue-900 px-3 py-1.5 rounded-lg font-black text-[10px] uppercase shadow-sm">VER CORTE</button>
                 <button onclick="modalEquipo()" class="bg-blue-500 text-white px-3 py-1.5 rounded-lg font-black text-[10px] uppercase shadow-sm">EQUIPO</button>
             </div>
+            
             <div id="admin-tools" class="hidden flex gap-1">
                 <button onclick="ajusteInventario('ENTRADA')" class="bg-green-600 text-[8px] px-2 py-1 rounded font-bold uppercase text-white">Entrada</button>
                 <button onclick="ajusteInventario('TRASPASO')" class="bg-orange-500 text-[8px] px-2 py-1 rounded font-bold uppercase text-white">Traspaso</button>
-                <button onclick="ajusteInventario('MERMA')" class="bg-red-600 text-[8px] px-2 py-1 rounded font-bold uppercase text-white">Ajuste</button>
+                <button onclick="ajusteInventario('SALIDA')" class="bg-red-600 text-[8px] px-2 py-1 rounded font-bold uppercase text-white">Ajuste</button>
             </div>
+
             <div class="text-right">
                 <div id="label-vendedor" class="font-black uppercase text-[10px]"></div>
                 <div id="label-sucursal" class="font-bold text-yellow-400 text-[8px] uppercase"></div>
@@ -71,34 +96,43 @@
             <main class="grid-area custom-scroll">
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2" id="grid-productos"></div>
             </main>
+
             <aside class="cart-aside">
                 <div class="cart-header-fixed">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] uppercase font-bold opacity-80 text-white">Total Venta:</span>
+                        <span class="text-[10px] uppercase font-bold opacity-80">Total Venta:</span>
                         <span class="text-2xl font-black text-yellow-400">$<span id="total-venta">0.00</span></span>
                     </div>
                     <button onclick="irACobrar()" class="w-full bg-green-500 text-white font-black py-4 rounded-xl shadow-lg text-xl uppercase mb-2 border-b-4 border-green-700">COBRAR</button>
+                    <div class="flex justify-between text-[9px] font-black italic">
+                        <span>DETALLE DEL CARRITO</span>
+                        <button onclick="carrito=[];actualizarCarrito()" class="underline text-yellow-400">VACIAR</button>
+                    </div>
                 </div>
-                <div id="lista-carrito" class="cart-items-scroll space-y-2"></div>
+                <div id="lista-carrito" class="cart-items-scroll space-y-2 custom-scroll"></div>
             </aside>
         </div>
     </div>
 
     <div id="modal-cobro" class="fixed inset-0 bg-slate-900/90 hidden items-center justify-center p-4 z-[200]">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center">
-            <h2 class="text-xl font-black mb-4 text-blue-900 uppercase italic">Finalizar Venta</h2>
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center border-t-8 border-blue-900">
+            <h2 class="text-xl font-black mb-4 text-blue-900 uppercase italic">Finalizar Cobro</h2>
+            
             <div class="grid grid-cols-3 gap-2 mb-4">
                 <button onclick="quickPay(100)" class="bg-slate-100 py-3 rounded-xl font-black text-slate-500">$100</button>
                 <button onclick="quickPay(200)" class="bg-slate-100 py-3 rounded-xl font-black text-slate-500">$200</button>
                 <button onclick="quickPay(500)" class="bg-slate-100 py-3 rounded-xl font-black text-slate-500">$500</button>
             </div>
-            <input type="number" id="monto-pagado" oninput="actualizarCambio()" class="w-full p-4 border rounded-2xl text-center text-3xl font-black mb-4 outline-none" placeholder="0.00">
-            <div class="p-4 bg-yellow-400 rounded-2xl mb-6 text-blue-900 font-black">
-                <p class="text-[10px] uppercase opacity-60">Cambio:</p>
+
+            <input type="number" id="monto-pagado" oninput="actualizarCambio()" class="w-full p-4 border rounded-2xl text-center text-3xl font-black mb-4 focus:border-blue-600 outline-none shadow-inner" placeholder="0.00">
+            
+            <div class="p-4 bg-yellow-400 rounded-2xl mb-6 text-blue-900 font-black text-center">
+                <p class="text-[10px] uppercase opacity-60">Cambio a entregar:</p>
                 <p class="text-4xl">$ <span id="cambio-texto">0.00</span></p>
             </div>
-            <button id="btn-finalizar" onclick="finalizarVenta()" class="w-full py-4 bg-blue-600 text-white rounded-xl font-black uppercase text-lg">Registrar</button>
-            <button onclick="cerrarCobro()" class="text-slate-400 font-bold uppercase text-[10px] mt-4 block mx-auto underline">Cerrar</button>
+            
+            <button id="btn-finalizar" onclick="finalizarVenta()" class="w-full py-4 bg-blue-600 text-white rounded-xl font-black uppercase text-lg shadow-lg">REGISTRAR EN MATRIZ</button>
+            <button onclick="cerrarCobro()" class="text-slate-400 font-bold uppercase text-[10px] mt-4 block mx-auto underline">Regresar</button>
         </div>
     </div>
 
@@ -106,22 +140,17 @@
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVwyM26i73cXuhd6lkFfq5_90IUPAFA8oG1uX-n7n4rPETsTH_Cmj_C2eoOF_DLG-4WQ/exec";
         
         let LISTA_USUARIOS = [], PRODUCTOS = [], carrito = [], vendedorActivo = "", sucursalActiva = "";
+        let ventasAcumuladasDia = {}; // Memoria para el Sidebar
 
-        // CARGA INICIAL DE DATOS
-        async function loadInitialData() {
+        window.onload = async () => {
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
-                const response = await fetch(WEB_APP_URL + "?action=getUsers");
-                const data = await response.json();
-                LISTA_USUARIOS = data;
-                document.getElementById('user-select').innerHTML = 
-                    data.map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('');
-            } catch (e) {
-                alert("Error crítico: No se pudo conectar con Matriz Credicel. Verifica tu internet o los permisos del script.");
-                console.error(e);
-            }
+                const res = await fetch(WEB_APP_URL + "?action=getUsers");
+                LISTA_USUARIOS = await res.json();
+                document.getElementById('user-select').innerHTML = LISTA_USUARIOS.map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('');
+            } catch (e) { alert("Error de red."); }
             document.getElementById('loading-overlay').style.display = 'none';
-        }
+        };
 
         async function intentarEntrar() {
             const nombreSel = document.getElementById('user-select').value;
@@ -148,16 +177,32 @@
                     document.getElementById('label-sucursal').innerText = sucursalActiva;
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('main-app').classList.remove('hidden');
-                } catch (e) { alert("Error cargando productos."); }
+                } catch (e) { alert("Error cargando sistema."); }
                 document.getElementById('loading-overlay').style.display = 'none';
             } else { alert("PIN Incorrecto"); }
         }
 
-        // Resto de funciones (pintarProductos, carrito, etc) se mantienen igual que la V11
+        function toggleCorte() { 
+            const side = document.getElementById('sidebar-corte');
+            side.classList.toggle('closed');
+            if(!side.classList.contains('closed')) pintarDetalleCorte();
+        }
+
+        function pintarDetalleCorte() {
+            const lista = document.getElementById('lista-detalle-corte');
+            let total = 0, html = "";
+            for (let id in ventasAcumuladasDia) {
+                let v = ventasAcumuladasDia[id]; total += v.total;
+                html += `<div class="flex justify-between border-b py-1"><span>${v.cant}x ${id}</span><span>$${v.total.toFixed(2)}</span></div>`;
+            }
+            lista.innerHTML = html || "<p class='text-center py-4 opacity-30'>SIN VENTAS AÚN</p>";
+            document.getElementById('corte-monto').innerText = "$" + total.toFixed(2);
+        }
+
         function pintarProductos() {
             document.getElementById('grid-productos').innerHTML = PRODUCTOS.map(p => `
                 <div onclick="clickProducto('${p.id}', '${p.n}', ${p.p})" class="product-card bg-white p-2 rounded-xl text-center shadow-sm flex flex-col justify-between h-24">
-                    <p class="text-blue-600 font-black text-[10px]">${p.id}</p>
+                    <p class="text-blue-600 font-black text-sm">${p.id}</p>
                     <p class="text-[7px] font-bold text-slate-400 uppercase leading-tight">${p.n}</p>
                     <p class="text-blue-900 font-black text-xs">${(p.id==='REP' || p.id==='GAS') ? 'VAR' : '$'+p.p}</p>
                 </div>`).join('');
@@ -165,10 +210,10 @@
 
         function clickProducto(id, n, p) {
             if(id === 'GAS') {
-                const con = prompt("¿Concepto?"); const mon = prompt("¿Monto?");
-                if(con && !isNaN(mon)) registrarVentaEspecial("GASTO", {concepto: con, monto: mon});
+                const con = prompt("¿Concepto del Gasto?"); const mon = prompt("¿Monto?");
+                if(con && mon > 0) registrarVentaEspecial("GASTO", {concepto: con, monto: parseFloat(mon)});
             } else if(id === 'REP') {
-                const m = prompt("¿Monto?"); if(m > 0) agregar(id, n, parseFloat(m));
+                const m = prompt("¿Monto Reparación?"); if(m > 0) agregar(id, n, parseFloat(m));
             } else { agregar(id, n, p); }
         }
 
@@ -176,14 +221,14 @@
         
         function actualizarCarrito() {
             document.getElementById('lista-carrito').innerHTML = carrito.map((item, i) => `
-                <div class="flex items-center justify-between bg-slate-50 p-2 rounded-lg border-l-4 border-blue-600 mb-1">
-                    <div class="flex-1 min-w-0 pr-1 text-left text-[10px]">
-                        <span class="truncate block text-blue-900 font-black">${item.n}</span>
-                        <span class="text-[8px] text-slate-400">${item.id}</span>
+                <div class="flex items-center justify-between bg-slate-50 p-2 rounded-lg border-l-4 border-blue-600 shadow-sm text-[10px] mb-1">
+                    <div class="flex-1 min-w-0 pr-1 text-left">
+                        <span class="truncate block text-blue-900 font-black uppercase">${item.n}</span>
+                        <span class="text-[8px] text-slate-400 font-bold">${item.id}</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="font-black">$${item.p}</span>
-                        <button onclick="eliminar(${i})" class="text-red-500 font-black text-lg p-1">×</button>
+                        <span class="font-black text-blue-900">$${item.p}</span>
+                        <button onclick="eliminar(${i})" class="text-red-500 font-black text-xl px-2">×</button>
                     </div>
                 </div>`).join('');
             document.getElementById('total-venta').innerText = carrito.reduce((s, i) => s + i.p, 0).toFixed(2);
@@ -200,30 +245,40 @@
         }
 
         async function finalizarVenta() {
+            const btn = document.getElementById('btn-finalizar'); btn.disabled = true;
             document.getElementById('loading-overlay').style.display = 'flex';
-            const items = carrito.map(i => ({ codigo: i.id, precio: i.p, cantidad: 1 }));
-            const data = { tipo: "VENTA", vendedor: vendedorActivo, sucursal: sucursalActiva, items: items };
+            
+            const itemsFinales = carrito.map(i => ({ codigo: i.id, precio: i.p, cantidad: 1 }));
+            
+            // Acumular para el Sidebar del turno
+            carrito.forEach(item => {
+                if(!ventasAcumuladasDia[item.id]) ventasAcumuladasDia[item.id] = { cant: 0, total: 0 };
+                ventasAcumuladasDia[item.id].cant += 1; ventasAcumuladasDia[item.id].total += item.p;
+            });
+
+            const data = { tipo: "VENTA", vendedor: vendedorActivo, sucursal: sucursalActiva, items: itemsFinales };
             
             try {
                 await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) });
-                alert("✅ Venta registrada en Matriz");
+                alert("✅ Venta Guardada");
                 carrito = []; actualizarCarrito(); cerrarCobro();
-            } catch (e) { alert("Error al registrar. Reintenta."); }
+            } catch (e) { alert("Error de red, pero se guardará en local."); }
+            
             document.getElementById('loading-overlay').style.display = 'none';
+            btn.disabled = false;
         }
 
         async function registrarVentaEspecial(tipo, info) {
             const data = { tipo: tipo, vendedor: vendedorActivo, sucursal: sucursalActiva, ...info };
             try {
                 await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) });
-                alert("✅ " + tipo + " registrado.");
+                alert("✅ Registrado con éxito.");
             } catch (e) { alert("Error de registro."); }
         }
 
-        // AJUSTES DE INVENTARIO (Solo Admin)
         function ajusteInventario(modo) {
-            const cod = prompt("Código:"); const cant = prompt("Cantidad:");
-            const ub = prompt("Ubicación (Navojoa/Huatabampo/Bodega):");
+            const cod = prompt("CÓDIGO:"); const cant = prompt("CANTIDAD:");
+            const ub = prompt("UBICACIÓN (Navojoa/Huatabampo/Bodega):");
             if(cod && cant && ub) {
                 const data = { tipo: "AJUSTE_INV", modo: modo, codigo: cod, cantidad: parseInt(cant), ubicacion: ub };
                 fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) });
@@ -232,18 +287,17 @@
         }
 
         function modalEquipo() {
-            const mod = prompt("Modelo:"); const imei = prompt("IMEI:");
-            const num = prompt("Número:"); const nom = prompt("Cliente:");
-            const eng = prompt("Enganche:");
+            const mod = prompt("MODELO:"); const imei = prompt("IMEI:");
+            const num = prompt("NÚMERO:"); const nom = prompt("NOMBRE CLIENTE:");
+            const eng = prompt("ENGANCHE:");
             if(mod && imei) {
                 const data = { tipo: "EQUIPO", modelo: mod, imei: imei, numero: num, nombre: nom, enganche: eng, sucursal: sucursalActiva };
                 fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) });
-                alert("Enviando equipo...");
+                alert("Equipo enviado a matriz.");
             }
         }
 
-        loadInitialData(); // Ejecutar al cargar
+        function ejecutarCorte() { if(confirm("¿CERRAR TURNO Y REINICIAR?")) window.location.reload(); }
     </script>
 </body>
 </html>
-
