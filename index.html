@@ -3,52 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Credicel POS V13 - Sistema Integral</title>
+    <title>Credicel POS V13.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .product-card { transition: all 0.1s; border: 1px solid #e2e8f0; cursor: pointer; user-select: none; }
         .product-card:active { transform: scale(0.95); background-color: #eff6ff; }
-        .rep-card { border: 2px solid #1e3a8a; background-color: #fefce8; } 
-        .gas-card { border: 2px solid #dc2626; background-color: #fee2e2; }
         .blue-gradient { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
-        .sidebar { transition: transform 0.3s ease-in-out; width: 300px; }
-        .sidebar.closed { transform: translateX(-100%); }
         html, body { height: 100%; margin: 0; overflow: hidden; background: #f1f5f9; }
         .app-container { display: flex; flex-direction: column; height: 100vh; }
         .content-area { flex: 1; display: flex; overflow: hidden; }
         .grid-area { flex: 1; overflow-y: auto; padding: 10px; padding-bottom: 150px; }
         .cart-aside { width: 320px; display: flex; flex-direction: column; background: white; border-left: 1px solid #cbd5e1; height: 100%; }
-        .cart-header-fixed { background: #1e3a8a; padding: 12px; color: white; shrink-0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 20; }
-        .cart-items-scroll { flex: 1; overflow-y: auto; padding: 8px; -webkit-overflow-scrolling: touch; }
+        .cart-header-fixed { background: #1e3a8a; padding: 12px; color: white; shrink-0; }
+        .cart-items-scroll { flex: 1; overflow-y: auto; padding: 8px; }
         #loading-overlay { display: none; }
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div id="loading-overlay" class="fixed inset-0 bg-blue-900/50 z-[300] flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white p-5 rounded-2xl font-black text-blue-900 animate-pulse">SINCRONIZANDO SISTEMA...</div>
+        <div class="bg-white p-5 rounded-2xl font-black text-blue-900 animate-pulse">CARGANDO SISTEMA...</div>
     </div>
 
     <div id="login-screen" class="fixed inset-0 bg-white z-[100] flex items-center justify-center p-4">
         <div class="max-w-sm w-full text-center">
             <div class="mb-6 font-black text-4xl text-blue-900 italic">CREDI<span class="text-yellow-400">CEL</span></div>
             <div class="space-y-4 text-left">
-                <label class="text-[10px] font-bold text-slate-400 uppercase">Selecciona Usuario</label>
-                <select id="user-select" class="w-full p-4 border rounded-xl font-bold bg-slate-50 text-blue-900 shadow-sm"></select>
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Usuario</label>
+                <select id="user-select" class="w-full p-4 border rounded-xl font-bold bg-slate-50 text-blue-900 shadow-sm">
+                    <option value="">Conectando con matriz...</option>
+                </select>
                 
-                <label class="text-[10px] font-bold text-slate-400 uppercase">Sucursal de hoy</label>
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Sucursal</label>
                 <select id="sucursal-select" class="w-full p-4 border rounded-xl font-bold bg-slate-50 text-blue-900 shadow-sm">
                     <option value="Navojoa">Navojoa</option>
                     <option value="Huatabampo">Huatabampo</option>
                     <option value="Bodega">Bodega</option>
                 </select>
 
-                <label class="text-[10px] font-bold text-slate-400 uppercase">PIN de Acceso</label>
+                <label class="text-[10px] font-bold text-slate-400 uppercase">PIN</label>
                 <input id="user-pin" type="password" maxlength="6" inputmode="numeric" class="w-full p-4 border rounded-xl text-center text-2xl tracking-[10px] font-bold bg-slate-50 shadow-sm" placeholder="****">
                 
-                <button onclick="intentarEntrar()" class="w-full blue-gradient text-white font-black py-4 rounded-xl shadow-lg uppercase mt-2">Iniciar Sesión</button>
+                <button onclick="intentarEntrar()" class="w-full blue-gradient text-white font-black py-4 rounded-xl shadow-lg uppercase mt-2">Entrar</button>
+                <button onclick="location.reload()" class="w-full text-[10px] text-slate-400 mt-4 uppercase underline">Reintentar conexión</button>
             </div>
         </div>
     </div>
@@ -56,13 +53,13 @@
     <div id="main-app" class="hidden app-container">
         <header class="blue-gradient text-white p-2 flex justify-between items-center shrink-0 shadow-md">
             <div class="flex gap-2">
-                <button onclick="toggleCorte()" class="bg-yellow-400 text-blue-900 px-3 py-1.5 rounded-lg font-black text-[10px] uppercase shadow-sm">CORTE</button>
+                <button onclick="alert('Usa el Excel para ver reportes')" class="bg-yellow-400 text-blue-900 px-3 py-1.5 rounded-lg font-black text-[10px] uppercase shadow-sm">CORTE</button>
                 <button onclick="modalEquipo()" class="bg-blue-500 text-white px-3 py-1.5 rounded-lg font-black text-[10px] uppercase shadow-sm">EQUIPO</button>
             </div>
             <div id="admin-tools" class="hidden flex gap-1">
-                <button onclick="ajusteInventario('ENTRADA')" class="bg-green-600 text-[8px] px-2 py-1 rounded font-bold uppercase">Entrada</button>
-                <button onclick="ajusteInventario('TRASPASO')" class="bg-orange-500 text-[8px] px-2 py-1 rounded font-bold uppercase">Traspaso</button>
-                <button onclick="ajusteInventario('MERMA')" class="bg-red-600 text-[8px] px-2 py-1 rounded font-bold uppercase">Ajuste</button>
+                <button onclick="ajusteInventario('ENTRADA')" class="bg-green-600 text-[8px] px-2 py-1 rounded font-bold uppercase text-white">Entrada</button>
+                <button onclick="ajusteInventario('TRASPASO')" class="bg-orange-500 text-[8px] px-2 py-1 rounded font-bold uppercase text-white">Traspaso</button>
+                <button onclick="ajusteInventario('MERMA')" class="bg-red-600 text-[8px] px-2 py-1 rounded font-bold uppercase text-white">Ajuste</button>
             </div>
             <div class="text-right">
                 <div id="label-vendedor" class="font-black uppercase text-[10px]"></div>
@@ -74,20 +71,15 @@
             <main class="grid-area custom-scroll">
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2" id="grid-productos"></div>
             </main>
-
             <aside class="cart-aside">
                 <div class="cart-header-fixed">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] uppercase font-bold opacity-80">Total Venta:</span>
+                        <span class="text-[10px] uppercase font-bold opacity-80 text-white">Total Venta:</span>
                         <span class="text-2xl font-black text-yellow-400">$<span id="total-venta">0.00</span></span>
                     </div>
-                    <button onclick="irACobrar()" class="w-full bg-green-500 text-white font-black py-4 rounded-xl shadow-xl text-xl uppercase mb-2 border-b-4 border-green-700">COBRAR</button>
-                    <div class="flex justify-between text-[9px] font-black italic text-slate-300 uppercase">
-                        <span>Detalle</span>
-                        <button onclick="carrito=[];actualizarCarrito()" class="underline text-yellow-400">Limpiar</button>
-                    </div>
+                    <button onclick="irACobrar()" class="w-full bg-green-500 text-white font-black py-4 rounded-xl shadow-lg text-xl uppercase mb-2 border-b-4 border-green-700">COBRAR</button>
                 </div>
-                <div id="lista-carrito" class="cart-items-scroll space-y-2 custom-scroll"></div>
+                <div id="lista-carrito" class="cart-items-scroll space-y-2"></div>
             </aside>
         </div>
     </div>
@@ -106,26 +98,30 @@
                 <p class="text-4xl">$ <span id="cambio-texto">0.00</span></p>
             </div>
             <button id="btn-finalizar" onclick="finalizarVenta()" class="w-full py-4 bg-blue-600 text-white rounded-xl font-black uppercase text-lg">Registrar</button>
-            <button onclick="cerrarCobro()" class="text-slate-400 font-bold uppercase text-[10px] mt-4 block mx-auto underline">Regresar</button>
+            <button onclick="cerrarCobro()" class="text-slate-400 font-bold uppercase text-[10px] mt-4 block mx-auto underline">Cerrar</button>
         </div>
     </div>
 
     <script>
-        // NUEVA URL INTEGRADA
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVwyM26i73cXuhd6lkFfq5_90IUPAFA8oG1uX-n7n4rPETsTH_Cmj_C2eoOF_DLG-4WQ/exec";
         
-        let PRODUCTOS = [], LISTA_USUARIOS = [], carrito = [], vendedorActivo = "", sucursalActiva = "";
-        let ventasAcumuladasDia = {}, gastosDelDia = [];
+        let LISTA_USUARIOS = [], PRODUCTOS = [], carrito = [], vendedorActivo = "", sucursalActiva = "";
 
-        window.onload = async () => {
+        // CARGA INICIAL DE DATOS
+        async function loadInitialData() {
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
-                const res = await fetch(WEB_APP_URL + "?getUsers=true");
-                LISTA_USUARIOS = await res.json();
-                document.getElementById('user-select').innerHTML = LISTA_USUARIOS.map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('');
-            } catch (e) { alert("Error de conexión con el servidor."); }
+                const response = await fetch(WEB_APP_URL + "?action=getUsers");
+                const data = await response.json();
+                LISTA_USUARIOS = data;
+                document.getElementById('user-select').innerHTML = 
+                    data.map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('');
+            } catch (e) {
+                alert("Error crítico: No se pudo conectar con Matriz Credicel. Verifica tu internet o los permisos del script.");
+                console.error(e);
+            }
             document.getElementById('loading-overlay').style.display = 'none';
-        };
+        }
 
         async function intentarEntrar() {
             const nombreSel = document.getElementById('user-select').value;
@@ -137,72 +133,30 @@
                 vendedorActivo = nombreSel;
                 sucursalActiva = sucursalSel;
                 
-                // Activar herramientas de Admin si es Said
                 if(vendedorActivo.toLowerCase() === "said") {
                     document.getElementById('admin-tools').classList.remove('hidden');
                 }
 
                 document.getElementById('loading-overlay').style.display = 'flex';
                 try {
-                    const resP = await fetch(WEB_APP_URL + "?getProducts=true");
+                    const resP = await fetch(WEB_APP_URL + "?action=getProducts");
                     PRODUCTOS = await resP.json();
                     PRODUCTOS.push({id:'REP', n:'REPARACION', p:0}, {id:'GAS', n:'GASTO', p:0});
                     pintarProductos();
-                } catch (e) { console.log("Modo Offline"); }
-
-                document.getElementById('label-vendedor').innerText = vendedorActivo;
-                document.getElementById('label-sucursal').innerText = sucursalActiva;
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-app').classList.remove('hidden');
+                    
+                    document.getElementById('label-vendedor').innerText = vendedorActivo;
+                    document.getElementById('label-sucursal').innerText = sucursalActiva;
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('main-app').classList.remove('hidden');
+                } catch (e) { alert("Error cargando productos."); }
                 document.getElementById('loading-overlay').style.display = 'none';
             } else { alert("PIN Incorrecto"); }
         }
 
-        // LÓGICA DE INVENTARIO (BOTONES DE ADMIN)
-        async function ajusteInventario(modo) {
-            const codigo = prompt("Ingrese CÓDIGO del accesorio:");
-            if(!codigo) return;
-            const cant = prompt("Ingrese CANTIDAD:");
-            if(!cant) return;
-            
-            let query = `?tipo=AJUSTE_INV&modo=${modo}&codigo=${codigo}&cantidad=${cant}&vendedor=${vendedorActivo}`;
-
-            if(modo === "TRASPASO") {
-                const origen = prompt("Ubicación ORIGEN (Navojoa/Huatabampo/Bodega):");
-                const destino = prompt("Ubicación DESTINO (Navojoa/Huatabampo/Bodega):");
-                query += `&origen=${origen}&destino=${destino}`;
-            } else {
-                const ubicacion = prompt("UBICACIÓN (Navojoa/Huatabampo/Bodega):");
-                query += `&ubicacion=${ubicacion}`;
-            }
-
-            document.getElementById('loading-overlay').style.display = 'flex';
-            new Image().src = WEB_APP_URL + query;
-            setTimeout(() => {
-                alert("✅ Movimiento de Inventario Registrado");
-                document.getElementById('loading-overlay').style.display = 'none';
-            }, 1500);
-        }
-
-        // LÓGICA DE REGISTRO DE EQUIPOS
-        function modalEquipo() {
-            const mod = prompt("Modelo del Equipo:");
-            const imei = prompt("IMEI:");
-            const num = prompt("Número:");
-            const num2 = prompt("Número 2:");
-            const nom = prompt("Nombre Cliente:");
-            const eng = prompt("Enganche:");
-
-            if(mod && imei) {
-                const query = `?tipo=EQUIPO&modelo=${mod}&imei=${imei}&numero=${num}&numero2=${num2}&nombre=${nom}&enganche=${eng}&sucursal=${sucursalActiva}`;
-                new Image().src = WEB_APP_URL + query;
-                alert("✅ Equipo registrado con éxito");
-            }
-        }
-
+        // Resto de funciones (pintarProductos, carrito, etc) se mantienen igual que la V11
         function pintarProductos() {
             document.getElementById('grid-productos').innerHTML = PRODUCTOS.map(p => `
-                <div onclick="clickProducto('${p.id}', '${p.n}', ${p.p})" class="product-card bg-white p-2 rounded-xl text-center shadow-sm flex flex-col justify-between h-24 ${p.id==='REP' ? 'rep-card' : ''} ${p.id==='GAS' ? 'gas-card' : ''}">
+                <div onclick="clickProducto('${p.id}', '${p.n}', ${p.p})" class="product-card bg-white p-2 rounded-xl text-center shadow-sm flex flex-col justify-between h-24">
                     <p class="text-blue-600 font-black text-[10px]">${p.id}</p>
                     <p class="text-[7px] font-bold text-slate-400 uppercase leading-tight">${p.n}</p>
                     <p class="text-blue-900 font-black text-xs">${(p.id==='REP' || p.id==='GAS') ? 'VAR' : '$'+p.p}</p>
@@ -211,15 +165,10 @@
 
         function clickProducto(id, n, p) {
             if(id === 'GAS') {
-                const con = prompt("¿Concepto del Gasto?");
-                const mon = prompt("¿Monto?");
-                if(con && !isNaN(mon)) {
-                    new Image().src = WEB_APP_URL + `?tipo=GASTO&vendedor=${vendedorActivo}&concepto=${con}&monto=${mon}&sucursal=${sucursalActiva}`;
-                    alert("✅ Gasto Registrado");
-                }
+                const con = prompt("¿Concepto?"); const mon = prompt("¿Monto?");
+                if(con && !isNaN(mon)) registrarVentaEspecial("GASTO", {concepto: con, monto: mon});
             } else if(id === 'REP') {
-                const m = prompt("¿Monto de la Reparación?");
-                if(!isNaN(m) && m > 0) agregar(id, n, parseFloat(m));
+                const m = prompt("¿Monto?"); if(m > 0) agregar(id, n, parseFloat(m));
             } else { agregar(id, n, p); }
         }
 
@@ -227,14 +176,14 @@
         
         function actualizarCarrito() {
             document.getElementById('lista-carrito').innerHTML = carrito.map((item, i) => `
-                <div class="flex items-center justify-between bg-slate-50 p-2 rounded-lg border-l-4 border-blue-600 shadow-sm text-[10px] mb-1">
-                    <div class="flex-1 min-w-0 pr-1 text-left">
-                        <span class="truncate block text-blue-900 font-black uppercase">${item.n}</span>
-                        <span class="text-[8px] text-slate-400 font-bold">${item.id}</span>
+                <div class="flex items-center justify-between bg-slate-50 p-2 rounded-lg border-l-4 border-blue-600 mb-1">
+                    <div class="flex-1 min-w-0 pr-1 text-left text-[10px]">
+                        <span class="truncate block text-blue-900 font-black">${item.n}</span>
+                        <span class="text-[8px] text-slate-400">${item.id}</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="font-black text-blue-900">$${item.p}</span>
-                        <button onclick="eliminar(${i})" class="text-red-500 font-black text-xl px-2">×</button>
+                        <span class="font-black">$${item.p}</span>
+                        <button onclick="eliminar(${i})" class="text-red-500 font-black text-lg p-1">×</button>
                     </div>
                 </div>`).join('');
             document.getElementById('total-venta').innerText = carrito.reduce((s, i) => s + i.p, 0).toFixed(2);
@@ -251,26 +200,50 @@
         }
 
         async function finalizarVenta() {
-            const btn = document.getElementById('btn-finalizar'); btn.disabled = true;
             document.getElementById('loading-overlay').style.display = 'flex';
+            const items = carrito.map(i => ({ codigo: i.id, precio: i.p, cantidad: 1 }));
+            const data = { tipo: "VENTA", vendedor: vendedorActivo, sucursal: sucursalActiva, items: items };
             
-            const itemsFinales = carrito.map(i => ({ codigo: i.id, precio: i.p, cantidad: 1 }));
-            
-            // Envío de venta con sucursal para que se registre en la tabla correcta
-            const urlVenta = WEB_APP_URL + `?tipo=VENTA&vendedor=${encodeURIComponent(vendedorActivo)}&sucursal=${sucursalActiva}&items=${encodeURIComponent(JSON.stringify(itemsFinales))}`;
-            
-            new Image().src = urlVenta;
-            
-            setTimeout(() => {
-                alert("✅ Venta Guardada en " + sucursalActiva);
+            try {
+                await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) });
+                alert("✅ Venta registrada en Matriz");
                 carrito = []; actualizarCarrito(); cerrarCobro();
-                document.getElementById('loading-overlay').style.display = 'none';
-                btn.disabled = false;
-                document.getElementById('monto-pagado').value = "";
-            }, 1000);
+            } catch (e) { alert("Error al registrar. Reintenta."); }
+            document.getElementById('loading-overlay').style.display = 'none';
         }
 
-        function toggleCorte() { alert("Para cerrar corte, genera el reporte en el archivo de Google Sheets."); }
+        async function registrarVentaEspecial(tipo, info) {
+            const data = { tipo: tipo, vendedor: vendedorActivo, sucursal: sucursalActiva, ...info };
+            try {
+                await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) });
+                alert("✅ " + tipo + " registrado.");
+            } catch (e) { alert("Error de registro."); }
+        }
+
+        // AJUSTES DE INVENTARIO (Solo Admin)
+        function ajusteInventario(modo) {
+            const cod = prompt("Código:"); const cant = prompt("Cantidad:");
+            const ub = prompt("Ubicación (Navojoa/Huatabampo/Bodega):");
+            if(cod && cant && ub) {
+                const data = { tipo: "AJUSTE_INV", modo: modo, codigo: cod, cantidad: parseInt(cant), ubicacion: ub };
+                fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) });
+                alert("Enviando ajuste...");
+            }
+        }
+
+        function modalEquipo() {
+            const mod = prompt("Modelo:"); const imei = prompt("IMEI:");
+            const num = prompt("Número:"); const nom = prompt("Cliente:");
+            const eng = prompt("Enganche:");
+            if(mod && imei) {
+                const data = { tipo: "EQUIPO", modelo: mod, imei: imei, numero: num, nombre: nom, enganche: eng, sucursal: sucursalActiva };
+                fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) });
+                alert("Enviando equipo...");
+            }
+        }
+
+        loadInitialData(); // Ejecutar al cargar
     </script>
 </body>
 </html>
+
