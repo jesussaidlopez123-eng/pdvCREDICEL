@@ -1,31 +1,16 @@
-
-         <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Credicel POS - V13.9.7 Matriz Total</title>
+    <title>Credicel POS - V13.9.8 Control Total</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .product-card { transition: all 0.1s; border: 1px solid #e2e8f0; cursor: pointer; user-select: none; }
         .product-card:active { transform: scale(0.95); background-color: #eff6ff; }
         .blue-gradient { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
-        
-        .sidebar { 
-            transition: transform 0.3s ease-in-out; 
-            width: 350px; 
-            position: fixed; 
-            top: 0; 
-            bottom: 0; 
-            left: 0; 
-            z-index: 300; 
-            background: white; 
-            border-right: 5px solid #1e3a8a; 
-            display: flex;
-            flex-direction: column;
-        }
+        .sidebar { transition: transform 0.3s ease-in-out; width: 350px; position: fixed; top: 0; bottom: 0; left: 0; z-index: 300; background: white; border-right: 5px solid #1e3a8a; display: flex; flex-direction: column; }
         .sidebar.closed { transform: translateX(-100%); }
-        
         html, body { height: 100%; margin: 0; overflow: hidden; background: #f1f5f9; }
         .app-container { display: flex; flex-direction: column; height: 100vh; }
         .content-area { flex: 1; display: flex; overflow: hidden; }
@@ -42,14 +27,14 @@
 
     <div id="loading-overlay" class="fixed inset-0 bg-blue-900/50 z-[400] flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-6 rounded-3xl font-black text-blue-900 animate-pulse uppercase text-center shadow-2xl">
-            Sincronizando con Matriz...<br>
-            <span class="text-[10px] opacity-60 text-blue-700 tracking-widest uppercase">Cargando Datos</span>
+            ACTUALIZANDO MATRIZ...<br>
+            <span class="text-[10px] opacity-60 text-blue-700 tracking-widest uppercase">Procesando Inventario</span>
         </div>
     </div>
 
     <div id="sidebar-corte" class="sidebar closed shadow-2xl p-6">
         <div class="flex justify-between items-center mb-6 shrink-0">
-            <h2 class="font-black text-blue-900 uppercase text-lg italic border-b-4 border-yellow-400">Resumen del Turno</h2>
+            <h2 class="font-black text-blue-900 uppercase text-lg italic border-b-4 border-yellow-400 font-black">Resumen del Turno</h2>
             <button onclick="toggleCorte()" class="text-4xl font-bold text-slate-300 hover:text-red-500 transition">&times;</button>
         </div>
         <div id="lista-detalle-corte" class="flex-1 overflow-y-auto text-sm space-y-2 font-bold text-slate-600 custom-scroll"></div>
@@ -64,17 +49,17 @@
             <div class="mb-8 font-black text-5xl text-blue-900 italic tracking-tighter">CREDI<span class="text-yellow-400">CEL</span></div>
             <div class="space-y-4 text-left font-bold">
                 <label class="text-[10px] uppercase text-slate-400 ml-2 font-black">Vendedor</label>
-                <select id="user-select" class="w-full p-4 border-2 rounded-2xl bg-slate-50 text-blue-900 outline-none focus:border-blue-500 transition"></select>
+                <select id="user-select" class="w-full p-4 border-2 rounded-xl bg-slate-50 text-blue-900 outline-none focus:border-blue-500 transition"></select>
                 
                 <label class="text-[10px] uppercase text-slate-400 ml-2 font-black">Sucursal</label>
-                <select id="sucursal-select" class="w-full p-4 border-2 rounded-2xl bg-slate-50 text-blue-900 outline-none focus:border-blue-500 transition">
+                <select id="sucursal-select" class="w-full p-4 border-2 rounded-xl bg-slate-50 text-blue-900 outline-none focus:border-blue-500 transition">
                     <option value="Navojoa">Navojoa</option>
                     <option value="Huatabampo">Huatabampo</option>
                     <option value="Bodega">Bodega</option>
                 </select>
                 
                 <label class="text-[10px] uppercase text-slate-400 ml-2 font-black">PIN</label>
-                <input id="user-pin" type="password" maxlength="6" inputmode="numeric" class="w-full p-4 border-2 rounded-2xl text-center text-3xl tracking-[12px] focus:border-blue-500 outline-none" placeholder="****">
+                <input id="user-pin" type="password" maxlength="6" inputmode="numeric" class="w-full p-4 border-2 rounded-xl text-center text-2xl tracking-[12px] focus:border-blue-500 outline-none" placeholder="****">
                 
                 <button onclick="intentarEntrar()" class="w-full blue-gradient text-white font-black py-5 rounded-2xl shadow-xl uppercase mt-4 active:scale-95 transition-all">Entrar</button>
             </div>
@@ -86,12 +71,14 @@
             <div class="flex gap-2">
                 <button onclick="toggleCorte()" class="bg-yellow-400 text-blue-900 px-4 py-2 rounded-lg font-black text-[10px] uppercase shadow-sm">CORTE</button>
                 <button onclick="modalEquipo()" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase shadow-sm">EQUIPO</button>
+                
                 <div id="admin-tools" class="hidden flex gap-1">
                     <button onclick="ajusteInventario('ENTRADA')" class="bg-blue-500 text-white px-3 py-2 rounded-lg font-black text-[10px] uppercase border-l border-blue-400/50 shadow-sm">Entrada</button>
                     <button onclick="ajusteInventario('TRASPASO')" class="bg-blue-500 text-white px-3 py-2 rounded-lg font-black text-[10px] uppercase border-l border-blue-400/50 shadow-sm">Traspaso</button>
                     <button onclick="ajusteInventario('SALIDA')" class="bg-blue-500 text-white px-3 py-2 rounded-lg font-black text-[10px] uppercase border-l border-blue-400/50 shadow-sm">Ajuste</button>
                 </div>
             </div>
+            
             <div class="text-right">
                 <div id="label-vendedor" class="font-black uppercase text-[10px] leading-none"></div>
                 <div id="label-sucursal" class="font-bold text-yellow-400 text-[8px] uppercase tracking-widest"></div>
@@ -102,6 +89,7 @@
             <main class="grid-area custom-scroll">
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2" id="grid-productos"></div>
             </main>
+
             <aside class="cart-aside">
                 <div class="cart-header-fixed">
                     <div class="flex justify-between items-center mb-2">
@@ -123,11 +111,11 @@
         <div class="bg-white rounded-[2.5rem] max-w-sm w-full p-8 text-center border-t-8 border-blue-900 shadow-2xl">
             <h2 class="text-2xl font-black mb-6 text-blue-900 uppercase italic">Finalizar Venta</h2>
             <div class="grid grid-cols-3 gap-2 mb-6">
-                <button onclick="quickPay(100)" class="bg-slate-100 py-4 rounded-2xl font-black text-slate-500 hover:bg-blue-50 transition">$100</button>
-                <button onclick="quickPay(200)" class="bg-slate-100 py-4 rounded-2xl font-black text-slate-500 hover:bg-blue-50 transition">$200</button>
-                <button onclick="quickPay(500)" class="bg-slate-100 py-4 rounded-2xl font-black text-slate-500 hover:bg-blue-50 transition">$500</button>
+                <button onclick="quickPay(100)" class="bg-slate-100 py-4 rounded-2xl font-black text-slate-500 shadow-sm hover:bg-blue-50 transition">$100</button>
+                <button onclick="quickPay(200)" class="bg-slate-100 py-4 rounded-2xl font-black text-slate-500 shadow-sm hover:bg-blue-50 transition">$200</button>
+                <button onclick="quickPay(500)" class="bg-slate-100 py-4 rounded-2xl font-black text-slate-500 shadow-sm hover:bg-blue-50 transition">$500</button>
             </div>
-            <input type="number" id="monto-pagado" oninput="actualizarCambio()" class="w-full p-5 border-2 rounded-[1.5rem] text-center text-4xl font-black mb-6 outline-none focus:border-blue-500" placeholder="0.00">
+            <input type="number" id="monto-pagado" oninput="actualizarCambio()" class="w-full p-5 border-2 rounded-[1.5rem] text-center text-4xl font-black mb-6 outline-none shadow-inner focus:border-blue-500" placeholder="0.00">
             <div class="p-6 bg-yellow-400 rounded-[1.5rem] mb-8 text-blue-900 font-black shadow-lg">
                 <p class="text-[11px] uppercase opacity-70">Cambio:</p>
                 <p class="text-5xl tracking-tighter">$ <span id="cambio-texto">0.00</span></p>
@@ -138,7 +126,7 @@
     </div>
 
     <script>
-        // NUEVA URL ACTUALIZADA SEGÚN TU ÚLTIMO MENSAJE
+        // URL ACTUALIZADA SEGÚN TU ÚLTIMO MENSAJE
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwqh61UPeEjyKalBuPblM2Eukquc0Tv3LSaN71RLllGLhTJOIIROiGOLskEH7qRUh-ftg/exec";
         
         let LISTA_USUARIOS = [], PRODUCTOS = [], carrito = [], vendedorActivo = "", sucursalActiva = "";
@@ -186,10 +174,11 @@
         async function enviarDatos(data) {
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
+                // Usamos fetch con POST y modo no-cors para evitar problemas de seguridad del navegador
                 await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
                 return true;
             } catch (e) {
-                alert("ERROR DE ENVÍO");
+                alert("ERROR DE ENVÍO A MATRIZ");
                 return false;
             } finally {
                 document.getElementById('loading-overlay').style.display = 'none';
@@ -269,22 +258,38 @@
             if(await enviarDatos(data)) { alert("VENTA REGISTRADA"); carrito = []; actualizarCarrito(); cerrarCobro(); }
         }
 
+        // --- CORRECCIÓN DE TRASPASOS Y ENTRADAS ---
         async function ajusteInventario(modo) {
-            const cod = prompt("CÓDIGO:"); const cant = prompt("CANTIDAD:");
-            if(!cod || !cant) return;
-            let data = { tipo: "AJUSTE_INV", modo: modo, codigo: cod, cantidad: parseInt(cant) };
+            let data = { tipo: "AJUSTE_INV", modo: modo };
+
             if(modo === "TRASPASO") {
-                data.origen = prompt("ORIGEN:"); data.destino = prompt("DESTINO:");
-            } else { data.ubicacion = prompt("SUCURSAL:"); }
-            if(await enviarDatos(data)) alert("INVENTARIO ACTUALIZADO");
+                data.origen = prompt("UBICACIÓN ORIGEN (Navojoa/Huatabampo/Bodega):");
+                if(!data.origen) return;
+                data.destino = prompt("UBICACIÓN DESTINO (Navojoa/Huatabampo/Bodega):");
+                if(!data.destino) return;
+            } else {
+                data.ubicacion = prompt("SUCURSAL (Navojoa/Huatabampo/Bodega):");
+                if(!data.ubicacion) return;
+            }
+
+            data.codigo = prompt("CÓDIGO DEL PRODUCTO:");
+            if(!data.codigo) return;
+            data.cantidad = prompt("CANTIDAD:");
+            if(!data.cantidad) return;
+
+            if(await enviarDatos(data)) alert("INVENTARIO ACTUALIZADO EN MATRIZ");
         }
 
         async function modalEquipo() {
-            const mod = prompt("MODELO:"); const imei = prompt("IMEI:");
-            const num = prompt("NÚMERO:"); const nom = prompt("CLIENTE:"); const eng = prompt("ENGANCHE:");
+            const mod = prompt("MODELO:"); 
+            const imei = prompt("IMEI:");
+            const num = prompt("NÚMERO:"); 
+            const nom = prompt("CLIENTE:"); 
+            const eng = prompt("ENGANCHE:");
+            
             if(mod && imei) {
                 const data = { tipo: "EQUIPO", modelo: mod, imei: imei, numero: num, nombre: nom, enganche: eng, sucursal: sucursalActiva };
-                if(await enviarDatos(data)) alert("EQUIPO REGISTRADO");
+                if(await enviarDatos(data)) alert("EQUIPO REGISTRADO EN MATRIZ");
             }
         }
 
