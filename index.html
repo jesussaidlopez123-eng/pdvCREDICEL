@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Credicel POS - V14.1 Sistema Matriz</title>
+    <title>Credicel POS - V14.3 Matriz Sincronizada</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .product-card { transition: all 0.1s; border: 1px solid #e2e8f0; cursor: pointer; user-select: none; }
@@ -25,8 +25,8 @@
 
     <div id="loading-overlay" class="fixed inset-0 bg-blue-900/50 z-[400] flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-6 rounded-3xl font-black text-blue-900 animate-pulse uppercase text-center shadow-2xl">
-            CONECTANDO CON MATRIZ...<br>
-            <span class="text-[10px] opacity-60 text-blue-700 tracking-widest uppercase">Actualizando Inventarios</span>
+            CONECTANDO A MATRIZ...<br>
+            <span class="text-[10px] opacity-60 text-blue-700 tracking-widest uppercase">Actualizando Datos</span>
         </div>
     </div>
 
@@ -72,7 +72,6 @@
                 <div id="admin-tools" class="hidden flex gap-1">
                     <button onclick="ajusteInventario('ENTRADA')" class="bg-blue-500 text-white px-3 py-2 rounded-lg font-black text-[10px] uppercase border-l border-blue-400/50 shadow-sm">Entrada</button>
                     <button onclick="ajusteInventario('TRASPASO')" class="bg-blue-500 text-white px-3 py-2 rounded-lg font-black text-[10px] uppercase border-l border-blue-400/50 shadow-sm">Traspaso</button>
-                    <button onclick="ajusteInventario('SALIDA')" class="bg-blue-500 text-white px-3 py-2 rounded-lg font-black text-[10px] uppercase border-l border-blue-400/50 shadow-sm">Ajuste</button>
                 </div>
             </div>
             <div class="text-right">
@@ -101,20 +100,20 @@
 
     <div id="modal-cobro" class="fixed inset-0 bg-slate-900/90 hidden items-center justify-center p-4 z-[200]">
         <div class="bg-white rounded-[2.5rem] max-w-sm w-full p-8 text-center border-t-8 border-blue-900 shadow-2xl">
-            <h2 class="text-2xl font-black mb-6 text-blue-900 uppercase italic">Cobro Final</h2>
-            <input type="number" id="monto-pagado" oninput="actualizarCambio()" class="w-full p-5 border-2 rounded-[1.5rem] text-center text-4xl font-black mb-6" placeholder="Paga con...">
-            <div class="p-6 bg-yellow-400 rounded-[1.5rem] mb-8 text-blue-900 font-black">
+            <h2 class="text-2xl font-black mb-6 text-blue-900 uppercase italic">Finalizar Venta</h2>
+            <input type="number" id="monto-pagado" oninput="actualizarCambio()" class="w-full p-5 border-2 rounded-[1.5rem] text-center text-4xl font-black mb-6 outline-none focus:border-blue-500" placeholder="0.00">
+            <div class="p-6 bg-yellow-400 rounded-[1.5rem] mb-8 text-blue-900 font-black shadow-lg">
                 <p class="text-[11px] uppercase opacity-70">Cambio:</p>
                 <p class="text-5xl tracking-tighter">$ <span id="cambio-texto">0.00</span></p>
             </div>
-            <button onclick="finalizarVenta()" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase text-xl shadow-xl">CONFIRMAR MATRIZ</button>
-            <button onclick="cerrarCobro()" class="mt-4 text-slate-400 uppercase text-[10px] font-bold underline">Cancelar</button>
+            <button onclick="finalizarVenta()" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase text-xl shadow-xl active:scale-95 transition-all">CONFIRMAR</button>
+            <button onclick="cerrarCobro()" class="mt-4 text-slate-400 uppercase text-[10px] font-bold underline">Regresar</button>
         </div>
     </div>
 
     <script>
-        // NUEVA URL QUE PROPORCIONASTE
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbweJOoBlcmA4SnWtqV1BxEu9E8PKhzVRBy8MIfBEXP63YFYC8XV5nkjaDxbqq3vByk2dA/exec";
+        // NUEVA URL ACTUALIZADA
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwlz2D5GwiLOjPEhiASkl15gQuJfxGglj1_hIrhcGK8dRKgswFXbZDGrr4mR1o8F-GPHQ/exec";
         
         let LISTA_USUARIOS = [], PRODUCTOS = [], carrito = [], vendedorActivo = "", sucursalActiva = "";
         let ventasAcumuladasDia = {}, totalAcumuladoTurno = 0;
@@ -125,7 +124,7 @@
                 const res = await fetch(WEB_APP_URL + "?action=getUsers");
                 LISTA_USUARIOS = await res.json();
                 document.getElementById('user-select').innerHTML = LISTA_USUARIOS.map(u => `<option value="${u.nombre}">${u.nombre}</option>`).join('');
-            } catch (e) { alert("Error al cargar usuarios."); }
+            } catch (e) { alert("Error de conexión"); }
             document.getElementById('loading-overlay').style.display = 'none';
         };
 
@@ -150,7 +149,7 @@
                     document.getElementById('label-sucursal').innerText = sucursalActiva;
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('main-app').classList.remove('hidden');
-                } catch (e) { alert("Error al cargar productos."); }
+                } catch (e) { alert("Error cargando productos"); }
                 document.getElementById('loading-overlay').style.display = 'none';
             } else { alert("PIN INCORRECTO"); }
         }
@@ -160,17 +159,14 @@
             try {
                 await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
                 return true;
-            } catch (e) {
-                alert("ERROR DE CONEXIÓN CON MATRIZ");
-                return false;
-            } finally {
+            } catch (e) { return false; } finally {
                 document.getElementById('loading-overlay').style.display = 'none';
             }
         }
 
         function pintarProductos() {
             document.getElementById('grid-productos').innerHTML = PRODUCTOS.map(p => `
-                <div onclick="clickProducto('${p.id}', '${p.n}', ${p.p})" class="product-card bg-white p-3 rounded-xl text-center shadow-sm flex flex-col justify-between h-28">
+                <div onclick="clickProducto('${p.id}', '${p.n}', ${p.p})" class="product-card bg-white p-3 rounded-xl text-center shadow-sm flex flex-col justify-between h-28 border">
                     <p class="text-blue-600 font-black text-xs uppercase">${p.id}</p>
                     <p class="text-[8px] font-bold text-slate-400 uppercase leading-none overflow-hidden h-4">${p.n}</p>
                     <p class="text-blue-900 font-black text-sm">${(p.id==='REP' || p.id==='GAS') ? 'VAR' : '$'+p.p}</p>
@@ -179,31 +175,39 @@
 
         function clickProducto(id, n, p) {
             if(id === 'GAS') {
-                const con = prompt("CONCEPTO DEL GASTO:"); const mon = prompt("MONTO:");
+                const con = prompt("CONCEPTO:"); const mon = prompt("MONTO:");
                 if(con && mon > 0) enviarDatos({ tipo: "GASTO", vendedor: vendedorActivo, sucursal: sucursalActiva, concepto: con, monto: parseFloat(mon) });
             } else if(id === 'REP') {
-                const m = prompt("COSTO DE REPARACIÓN:"); if(m > 0) agregar(id, n, parseFloat(m));
+                const m = prompt("COSTO REPARACIÓN:"); if(m > 0) agregar(id, n, parseFloat(m));
             } else { agregar(id, n, p); }
         }
 
-        function agregar(id, n, p) { carrito.push({id, n, p}); actualizarCarrito(); }
+        function agregar(id, n, p) { 
+            carrito.push({id, n, p}); 
+            if(!ventasAcumuladasDia[id]) ventasAcumuladasDia[id] = { cant: 0, total: 0 };
+            ventasAcumuladasDia[id].cant += 1; ventasAcumuladasDia[id].total += p;
+            actualizarCarrito(); 
+        }
         
         function actualizarCarrito() {
             document.getElementById('lista-carrito').innerHTML = carrito.map((item, i) => `
                 <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border-l-4 border-blue-600 text-[10px] mb-1">
                     <div class="flex-1 truncate font-black text-blue-900 uppercase">${item.n}</div>
-                    <div class="flex items-center gap-2">
-                        <span class="font-black text-blue-900">$${item.p}</span>
-                        <button onclick="eliminar(${i})" class="text-red-500 font-black text-xl">&times;</button>
-                    </div>
+                    <button onclick="eliminar(${i})" class="text-red-500 font-black text-xl ml-2">&times;</button>
                 </div>`).join('');
             document.getElementById('total-venta').innerText = carrito.reduce((s, i) => s + i.p, 0).toFixed(2);
         }
 
-        function eliminar(i) { carrito.splice(i, 1); actualizarCarrito(); }
+        function eliminar(i) {
+            const item = carrito[i];
+            ventasAcumuladasDia[item.id].cant -= 1;
+            ventasAcumuladasDia[item.id].total -= item.p;
+            carrito.splice(i, 1); 
+            actualizarCarrito(); 
+        }
+
         function irACobrar() { if(carrito.length > 0) document.getElementById('modal-cobro').style.display = 'flex'; }
         function cerrarCobro() { document.getElementById('modal-cobro').style.display = 'none'; }
-        
         function actualizarCambio() {
             const t = parseFloat(document.getElementById('total-venta').innerText);
             const p = parseFloat(document.getElementById('monto-pagado').value) || 0;
@@ -215,49 +219,38 @@
             carrito.forEach(item => {
                 if(!agrupado[item.id]) agrupado[item.id] = { codigo: item.id, cantidad: 0, precio: 0 };
                 agrupado[item.id].cantidad += 1; agrupado[item.id].precio += item.p;
-                if(!ventasAcumuladasDia[item.id]) ventasAcumuladasDia[item.id] = { cant: 0, total: 0 };
-                ventasAcumuladasDia[item.id].cant += 1; ventasAcumuladasDia[item.id].total += item.p;
             });
-
             const data = { tipo: "VENTA", vendedor: vendedorActivo, sucursal: sucursalActiva, items: Object.values(agrupado), corteX: "" };
             if(await enviarDatos(data)) { 
-                alert("VENTA FINALIZADA CORRECTAMENTE"); 
+                alert("REGISTRADO EN MATRIZ"); 
                 carrito = []; actualizarCarrito(); cerrarCobro(); 
                 document.getElementById('monto-pagado').value = "";
             }
         }
 
-        // --- FUNCIONES DE INVENTARIO PULIDAS ---
         async function ajusteInventario(modo) {
             let data = { tipo: "AJUSTE_INV", modo: modo };
-
             if(modo === "TRASPASO") {
                 data.origen = prompt("UBICACIÓN ORIGEN (Navojoa/Huatabampo/Bodega):");
                 if(!data.origen) return;
                 data.destino = prompt("UBICACIÓN DESTINO (Navojoa/Huatabampo/Bodega):");
                 if(!data.destino) return;
             } else {
-                data.ubicacion = prompt("SUCURSAL PARA EL MOVIMIENTO (Navojoa/Huatabampo/Bodega):");
+                data.ubicacion = prompt("SUCURSAL (Navojoa/Huatabampo/Bodega):");
                 if(!data.ubicacion) return;
             }
-
-            data.codigo = prompt("CÓDIGO DEL PRODUCTO:");
-            if(!data.codigo) return;
+            data.codigo = prompt("CÓDIGO:");
             data.cantidad = prompt("CANTIDAD:");
-            if(!data.cantidad) return;
-
-            if(await enviarDatos(data)) alert("MATRIZ ACTUALIZADA EXITOSAMENTE");
+            if(!data.codigo || !data.cantidad) return;
+            if(await enviarDatos(data)) alert("STOCK ACTUALIZADO");
         }
 
         async function modalEquipo() {
-            const mod = prompt("MODELO:"); 
-            const imei = prompt("IMEI:");
-            const num = prompt("NÚMERO:"); 
-            const nom = prompt("CLIENTE:"); 
-            const eng = prompt("ENGANCHE:");
+            const mod = prompt("MODELO:"); const imei = prompt("IMEI:");
+            const num = prompt("NÚMERO:"); const nom = prompt("CLIENTE:"); const eng = prompt("ENGANCHE:");
             if(mod && imei) {
                 const data = { tipo: "EQUIPO", modelo: mod, imei: imei, numero: num, nombre: nom, enganche: eng, sucursal: sucursalActiva };
-                if(await enviarDatos(data)) alert("EQUIPO REGISTRADO EN MATRIZ");
+                if(await enviarDatos(data)) alert("EQUIPO REGISTRADO");
             }
         }
 
@@ -266,16 +259,19 @@
             const lista = document.getElementById('lista-detalle-corte');
             let total = 0, html = "";
             for (let id in ventasAcumuladasDia) {
-                let v = ventasAcumuladasDia[id]; total += v.total;
-                html += `<div class="flex justify-between border-b py-2"><span class="uppercase">${v.cant}x ${id}</span><span>$${v.total.toFixed(2)}</span></div>`;
+                let v = ventasAcumuladasDia[id]; 
+                if(v.cant > 0) {
+                    total += v.total;
+                    html += `<div class="flex justify-between border-b py-2"><span class="uppercase">${v.cant}x ${id}</span><span>$${v.total.toFixed(2)}</span></div>`;
+                }
             }
             totalAcumuladoTurno = total;
-            lista.innerHTML = html || "<p class='text-center opacity-30 py-10'>Sin ventas en el turno</p>";
+            lista.innerHTML = html || "<p class='text-center opacity-30 py-10'>Sin movimientos</p>";
             document.getElementById('corte-monto').innerText = "$" + total.toFixed(2);
         }
 
         function ejecutarCorte() {
-            if(confirm("¿Estás seguro de cerrar el turno y enviar el corte?")) {
+            if(confirm("¿Cerrar turno y enviar corte?")) {
                 enviarDatos({ tipo: "VENTA", vendedor: vendedorActivo, sucursal: sucursalActiva, items: [], corteX: totalAcumuladoTurno });
                 setTimeout(() => { window.location.reload(); }, 1000);
             }
@@ -283,3 +279,4 @@
     </script>
 </body>
 </html>
+
