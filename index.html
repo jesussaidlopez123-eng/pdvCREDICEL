@@ -3,108 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Credicel POS V16.1 - Optimizado</title>
+    <title>Credicel POS V16.2 - Multi-Resolución</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Ajuste para evitar que la cabecera se pierda en tablets */
-        :root { --header-height: 60px; }
-        
-        .product-card { transition: all 0.1s; border: 1px solid #e2e8f0; cursor: pointer; user-select: none; } 
-        .product-card:active { transform: scale(0.95); background-color: #eff6ff; } 
-        .blue-gradient { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); } 
-        
-        /* Sidebar ajustada para tablets */
-        .sidebar { transition: 0.3s; width: 320px; position: fixed; inset: 0 auto 0 0; z-index: 300; background: white; border-right: 5px solid #1e3a8a; } 
-        .sidebar.closed { transform: translateX(-100%); } 
-        
-        #loading { display: none; }
-        
-        /* Previene que el contenido se pegue arriba (Safe Area) */
-        body { padding-top: env(safe-area-inset-top); }
-        
-        /* Mejora de scroll en tablets */
-        .custom-scroll { -webkit-overflow-scrolling: touch; }
-        
-        /* Ajuste de botones para que no se corten */
-        .btn-responsive { padding: 0.5rem 0.75rem; font-size: 0.7rem; line-height: 1; }
-        @media (min-width: 768px) { .btn-responsive { font-size: 0.8rem; padding: 0.6rem 1rem; } }
+        /* Estilos base para adaptabilidad total */
+        html, body { 
+            height: 100%; 
+            margin: 0; 
+            background: #f1f5f9; 
+            font-family: ui-sans-serif, system-ui, sans-serif;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header flexible que no corta botones */
+        header {
+            flex-shrink: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Grid de productos que se ajusta solo al tamaño del dispositivo */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 0.5rem;
+            padding: 0.5rem;
+        }
+
+        .product-card { 
+            transition: all 0.1s; 
+            border: 1px solid #e2e8f0; 
+            cursor: pointer; 
+            user-select: none; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100px;
+            background: white;
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .product-card:active { transform: scale(0.95); background-color: #eff6ff; }
+        .blue-gradient { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
+
+        /* Sidebar con ancho relativo */
+        .sidebar { 
+            transition: 0.3s; 
+            width: 85%; 
+            max-width: 350px; 
+            position: fixed; 
+            inset: 0 auto 0 0; 
+            z-index: 300; 
+            background: white; 
+            border-right: 5px solid #1e3a8a; 
+        }
+        .sidebar.closed { transform: translateX(-100%); }
+
+        /* Contenedor principal con scroll independiente */
+        .content-main {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+        }
+
+        .scroll-area {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 768px) {
+            .content-main { flex-direction: column; }
+            .cart-panel { width: 100% !important; height: 35%; border-left: 0; border-top: 2px solid #cbd5e1; }
+        }
     </style>
 </head>
-<body class="bg-slate-100 h-screen overflow-hidden flex flex-col font-sans">
+<body class="overflow-hidden">
 
-    <div id="loading" class="fixed inset-0 bg-black/60 z-[500] flex items-center justify-center text-white font-black italic uppercase text-center">
-        <div>PROCESANDO EN MATRIZ...<br><span class="text-[10px] font-normal tracking-widest">No cierres la ventana</span></div>
+    <div id="loading" class="fixed inset-0 bg-black/60 z-[500] flex items-center justify-center text-white font-black uppercase text-center">
+        <div>PROCESANDO...<br><span class="text-[10px] font-normal tracking-widest">No cierres la ventana</span></div>
     </div>
 
-    <header class="blue-gradient p-3 text-white flex justify-between items-center shadow-lg shrink-0" style="min-height: var(--header-height)">
-        <div class="flex gap-2 items-center">
-            <button onclick="toggleSidebar()" class="bg-yellow-400 text-blue-900 px-3 py-2 rounded-lg font-black text-[10px] uppercase shadow-md active:scale-90">CORTE</button>
-            <div id="admin-tools" class="hidden flex gap-1">
-                <button onclick="ajusteInv('ENTRADA')" class="bg-blue-500 btn-responsive rounded-lg font-black uppercase shadow-sm active:scale-90">Entrada</button>
-                <button onclick="ajusteInv('SALIDA')" class="bg-red-500 btn-responsive rounded-lg font-black uppercase shadow-sm active:scale-90">Ajuste</button>
-                <button onclick="ajusteInv('TRASPASO')" class="bg-blue-500 btn-responsive rounded-lg font-black uppercase shadow-sm active:scale-90">Traspaso</button>
-                <button onclick="modalEquipo()" class="bg-indigo-600 btn-responsive rounded-lg font-black uppercase shadow-sm active:scale-90">Equipo</button>
+    <div class="app-container">
+        <header class="blue-gradient text-white shadow-lg">
+            <div class="flex flex-wrap gap-2">
+                <button onclick="toggleSidebar()" class="bg-yellow-400 text-blue-900 px-3 py-2 rounded-lg font-black text-[10px] uppercase shadow-md">CORTE</button>
+                <div id="admin-tools" class="hidden flex flex-wrap gap-1">
+                    <button onclick="ajusteInv('ENTRADA')" class="bg-blue-500 px-3 py-2 rounded-lg font-black text-[10px] uppercase shadow-sm">Entrada</button>
+                    <button onclick="ajusteInv('SALIDA')" class="bg-red-500 px-3 py-2 rounded-lg font-black text-[10px] uppercase shadow-sm">Ajuste</button>
+                    <button onclick="ajusteInv('TRASPASO')" class="bg-blue-500 px-3 py-2 rounded-lg font-black text-[10px] uppercase shadow-sm">Traspaso</button>
+                    <button onclick="modalEquipo()" class="bg-indigo-600 px-3 py-2 rounded-lg font-black text-[10px] uppercase shadow-sm">Equipo</button>
+                </div>
             </div>
-        </div>
-        <div class="text-right uppercase font-black italic leading-none ml-2">
-            <div id="v-nom" class="text-[10px] truncate max-w-[100px] md:max-w-none"></div>
-            <div id="v-suc" class="text-yellow-400 text-[8px] tracking-tight"></div>
-        </div>
-    </header>
+            <div class="text-right">
+                <div id="v-nom" class="font-black uppercase text-[10px] leading-none"></div>
+                <div id="v-suc" class="font-bold text-yellow-400 text-[8px] uppercase"></div>
+            </div>
+        </header>
 
-    <div class="flex-1 flex overflow-hidden">
-        <main class="flex-1 p-2 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 custom-scroll" id="grid"></main>
-        
-        <aside class="w-64 md:w-80 bg-white border-l p-3 flex flex-col shadow-xl shrink-0">
-            <div class="text-center mb-3 border-b pb-3">
-                <span class="text-2xl md:text-3xl font-black text-blue-600">$<span id="t-v">0.00</span></span>
-                <button onclick="abrirCobro()" class="w-full bg-green-500 text-white py-3 md:py-4 rounded-xl font-black text-lg md:text-xl mt-2 shadow-lg active:scale-95 transition">COBRAR</button>
-                <button onclick="limpiarVenta()" class="mt-2 text-[8px] text-slate-400 uppercase font-bold underline">Limpiar Venta</button>
-            </div>
-            <div id="carrito" class="flex-1 overflow-y-auto space-y-1 custom-scroll"></div>
-        </aside>
-    </div>
+        <div class="content-main">
+            <main class="flex-1 scroll-area">
+                <div class="products-grid" id="grid"></div>
+            </main>
 
-    <div id="modal-cobro" class="fixed inset-0 bg-slate-900/90 hidden items-center justify-center p-4 z-[200]">
-        <div class="bg-white rounded-[1.5rem] md:rounded-[2rem] max-w-sm w-full p-5 md:p-6 text-center shadow-2xl">
-            <h2 class="text-xl md:text-2xl font-black mb-4 text-blue-900 uppercase italic">Finalizar Cobro</h2>
-            <div class="grid grid-cols-3 gap-2 mb-4">
-                <button onclick="quickPay(100)" class="bg-slate-100 py-3 md:py-4 rounded-xl font-black text-slate-500 hover:bg-blue-50 transition">$100</button>
-                <button onclick="quickPay(200)" class="bg-slate-100 py-3 md:py-4 rounded-xl font-black text-slate-500 hover:bg-blue-50 transition">$200</button>
-                <button onclick="quickPay(500)" class="bg-slate-100 py-3 md:py-4 rounded-xl font-black text-slate-500 hover:bg-blue-50 transition">$500</button>
-            </div>
-            <input type="number" id="pago-cliente" oninput="calcCambio()" class="w-full p-4 border-2 rounded-xl text-center text-3xl font-black mb-4 outline-none" placeholder="0.00">
-            <div class="p-3 md:p-4 bg-yellow-400 rounded-xl mb-4 text-blue-900 font-black">
-                <p class="text-[9px] uppercase opacity-70">Cambio:</p>
-                <p class="text-3xl md:text-4xl">$ <span id="cambio-v">0.00</span></p>
-            </div>
-            <button onclick="finalizarVenta()" class="w-full py-4 bg-blue-600 text-white rounded-xl font-black uppercase shadow-lg">Confirmar</button>
-            <button onclick="cerrarCobro()" class="mt-4 text-[10px] font-bold underline">Volver</button>
+            <aside class="cart-panel w-80 bg-white border-l flex flex-col shadow-xl">
+                <div class="p-4 border-b text-center shrink-0">
+                    <div class="text-3xl font-black text-blue-600 leading-none mb-2">$<span id="t-v">0.00</span></div>
+                    <button onclick="abrirCobro()" class="w-full bg-green-500 text-white py-3 rounded-xl font-black text-xl shadow-lg uppercase">Cobrar</button>
+                    <button onclick="limpiarVenta()" class="mt-2 text-[10px] text-slate-400 font-bold underline uppercase">Limpiar</button>
+                </div>
+                <div id="carrito" class="flex-1 scroll-area p-2 space-y-1"></div>
+            </aside>
         </div>
     </div>
 
     <div id="modal-login" class="fixed inset-0 bg-white z-[400] flex items-center justify-center p-4">
-        <div class="max-w-sm w-full border-2 md:border-4 border-blue-900 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-2xl text-center">
-            <h1 class="text-3xl md:text-4xl font-black text-blue-900 italic mb-6 uppercase">Credi<span class="text-yellow-400">cel</span></h1>
-            <select id="sel-u" class="w-full p-4 border-2 rounded-xl mb-4 font-bold text-blue-900"></select>
-            <select id="sel-s" class="w-full p-4 border-2 rounded-xl mb-4 font-bold text-blue-900">
+        <div class="w-full max-w-sm border-4 border-blue-900 p-8 rounded-[2rem] shadow-2xl text-center bg-white">
+            <h1 class="text-4xl font-black text-blue-900 italic mb-6 uppercase">Credi<span class="text-yellow-400">cel</span></h1>
+            <select id="sel-u" class="w-full p-4 border-2 rounded-xl mb-4 font-bold text-blue-900 bg-slate-50"></select>
+            <select id="sel-s" class="w-full p-4 border-2 rounded-xl mb-4 font-bold text-blue-900 bg-slate-50">
                 <option>Navojoa</option><option>Huatabampo</option><option>Bodega</option>
             </select>
             <input id="pin" type="password" maxlength="6" class="w-full p-4 border-2 rounded-xl text-center text-2xl tracking-[10px] mb-4" placeholder="****">
-            <button onclick="login()" class="w-full blue-gradient text-white py-4 md:py-5 rounded-2xl font-black uppercase shadow-lg">Entrar</button>
+            <button onclick="login()" class="w-full blue-gradient text-white py-5 rounded-2xl font-black uppercase shadow-lg">Entrar</button>
         </div>
     </div>
 
-    <div id="sidebar" class="sidebar closed p-6 flex flex-col shadow-2xl border-r-[10px] border-blue-900">
+    <div id="modal-cobro" class="fixed inset-0 bg-slate-900/90 hidden items-center justify-center p-4 z-[200]">
+        <div class="bg-white rounded-[2rem] max-w-sm w-full p-6 text-center shadow-2xl">
+            <h2 class="text-2xl font-black mb-4 text-blue-900 uppercase italic">Finalizar Cobro</h2>
+            <div class="grid grid-cols-3 gap-2 mb-4">
+                <button onclick="quickPay(100)" class="bg-slate-100 py-4 rounded-xl font-black text-slate-500 hover:bg-blue-50 transition">$100</button>
+                <button onclick="quickPay(200)" class="bg-slate-100 py-4 rounded-xl font-black text-slate-500 hover:bg-blue-50 transition">$200</button>
+                <button onclick="quickPay(500)" class="bg-slate-100 py-4 rounded-xl font-black text-slate-500 hover:bg-blue-50 transition">$500</button>
+            </div>
+            <input type="number" id="pago-cliente" oninput="calcCambio()" class="w-full p-4 border-2 rounded-xl text-center text-3xl font-black mb-4 outline-none" placeholder="0.00">
+            <div class="p-4 bg-yellow-400 rounded-xl mb-4 text-blue-900 font-black">
+                <p class="text-[10px] uppercase opacity-70 leading-none">Cambio:</p>
+                <p class="text-4xl">$ <span id="cambio-v">0.00</span></p>
+            </div>
+            <button onclick="finalizarVenta()" class="w-full py-4 bg-blue-600 text-white rounded-xl font-black uppercase shadow-lg">Registrar</button>
+            <button onclick="cerrarCobro()" class="mt-4 text-[10px] font-bold underline uppercase">Volver</button>
+        </div>
+    </div>
+
+    <div id="sidebar" class="sidebar closed p-6 flex flex-col shadow-2xl">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="font-black text-blue-900 uppercase italic text-sm md:text-base">Historial Turno</h2>
+            <h2 class="font-black text-blue-900 uppercase italic">Turno Actual</h2>
             <button onclick="toggleSidebar()" class="text-4xl font-bold">&times;</button>
         </div>
-        <div id="corte-lista" class="flex-1 overflow-y-auto text-[10px] font-bold text-slate-500 space-y-2 custom-scroll"></div>
+        <div id="corte-lista" class="flex-1 scroll-area text-[10px] font-bold text-slate-500 space-y-2"></div>
         <div class="p-4 bg-blue-900 rounded-2xl my-4 text-center">
-            <div id="total-corte" class="text-yellow-400 text-2xl md:text-3xl font-black">$0.00</div>
+            <div id="total-corte" class="text-yellow-400 text-3xl font-black">$0.00</div>
         </div>
-        <button onclick="enviarCorte()" class="w-full bg-red-600 text-white py-4 rounded-xl font-black uppercase text-xs shadow-lg">Cerrar Turno</button>
+        <button onclick="enviarCorte()" class="w-full bg-red-600 text-white py-4 rounded-xl font-black uppercase text-xs">Cerrar Turno</button>
     </div>
 
     <script>
@@ -145,9 +208,9 @@
 
         function pintar() {
             document.getElementById('grid').innerHTML = PRODS.map(p => `
-                <div onclick="clickProd('${p.id}', '${p.n}', ${p.p})" class="product-card bg-white p-2 rounded-xl text-center flex flex-col h-24 justify-between border">
+                <div onclick="clickProd('${p.id}', '${p.n}', ${p.p})" class="product-card">
                     <div class="text-blue-600 font-black text-[10px] uppercase truncate">${p.id}</div>
-                    <div class="text-[7px] font-bold text-slate-400 uppercase leading-none overflow-hidden h-4">${p.n}</div>
+                    <div class="text-[8px] font-bold text-slate-400 uppercase leading-none overflow-hidden h-6">${p.n}</div>
                     <div class="text-blue-900 font-black text-[10px]">${p.id === 'GAS' || p.id === 'REP' ? 'VAR' : '$'+p.p}</div>
                 </div>`).join('');
         }
@@ -170,8 +233,8 @@
         function actualizar() {
             document.getElementById('carrito').innerHTML = carrito.map((item, i) => `
                 <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg text-[9px] border-l-4 border-blue-600 mb-1">
-                    <span class="font-bold truncate w-32 uppercase">${item.n}</span>
-                    <button onclick="del(${i})" class="text-red-500 text-lg font-black p-1">&times;</button>
+                    <span class="font-bold truncate w-40 uppercase">${item.n}</span>
+                    <button onclick="del(${i})" class="text-red-500 text-lg font-black">&times;</button>
                 </div>`).join('');
             document.getElementById('t-v').innerText = carrito.reduce((a, b) => a + b.p, 0).toFixed(2);
         }
@@ -181,7 +244,6 @@
         function abrirCobro() { if(carrito.length > 0) document.getElementById('modal-cobro').style.display = 'flex'; }
         function cerrarCobro() { document.getElementById('modal-cobro').style.display = 'none'; }
         function quickPay(n) { document.getElementById('pago-cliente').value = n; calcCambio(); }
-        
         function calcCambio() {
             const t = parseFloat(document.getElementById('t-v').innerText), p = parseFloat(document.getElementById('pago-cliente').value) || 0;
             document.getElementById('cambio-v').innerText = (p - t > 0) ? (p - t).toFixed(2) : "0.00";
@@ -232,7 +294,7 @@
             document.getElementById('sidebar').classList.toggle('closed');
             let h = "", t = 0;
             for(let id in corte) {
-                h += `<div class="flex justify-between border-b py-2 italic font-black uppercase text-[9px]"><span>${corte[id].cant}x ${id}</span><span>$${corte[id].total.toFixed(2)}</span></div>`;
+                h += `<div class="flex justify-between border-b py-2 italic font-black uppercase"><span>${corte[id].cant}x ${id}</span><span>$${corte[id].total.toFixed(2)}</span></div>`;
                 t += corte[id].total;
             }
             document.getElementById('corte-lista').innerHTML = h || "<p class='text-center py-10 opacity-30'>Vacío</p>";
@@ -253,4 +315,3 @@
     </script>
 </body>
 </html>
-
