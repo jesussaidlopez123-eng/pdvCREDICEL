@@ -3,95 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Credicel POS V16.3 - Estable</title>
+    <title>Credicel POS V16.5 - Abonos y Sincronización</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Reset y ajustes de scroll para evitar bloqueos en Tablets */
-        html, body { 
-            height: 100%; 
-            margin: 0; 
-            padding: 0;
-            background: #f1f5f9; 
-            font-family: ui-sans-serif, system-ui, sans-serif;
-            overflow: hidden;
-        }
-
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            height: -webkit-fill-available;
-        }
-
-        /* Header ajustable: No se corta en Tablets */
-        header {
-            flex-shrink: 0;
-            z-index: 50;
-            padding-top: env(safe-area-inset-top, 0.75rem);
-        }
-
-        /* Grid de productos responsivo */
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
-            gap: 0.6rem;
-            padding: 0.75rem;
-        }
-
-        .product-card { 
-            transition: all 0.1s; 
-            border: 1px solid #e2e8f0; 
-            cursor: pointer; 
-            user-select: none; 
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 110px;
-            background: white;
-            border-radius: 0.85rem;
-            padding: 0.6rem;
-            text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
+        /* Estilos optimizados para estabilidad en Tablets [cite: 146, 151, 152, 162] */
+        html, body { height: 100%; margin: 0; padding: 0; background: #f1f5f9; font-family: ui-sans-serif, system-ui, sans-serif; overflow: hidden; }
+        .app-container { display: flex; flex-direction: column; height: 100vh; height: -webkit-fill-available; }
+        header { flex-shrink: 0; z-index: 50; padding-top: env(safe-area-inset-top, 0.75rem); }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 0.6rem; padding: 0.75rem; }
+        .product-card { transition: all 0.1s; border: 1px solid #e2e8f0; cursor: pointer; user-select: none; display: flex; flex-direction: column; justify-content: space-between; height: 110px; background: white; border-radius: 0.85rem; padding: 0.6rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .product-card:active { transform: scale(0.95); background-color: #eff6ff; }
         .blue-gradient { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
-
-        /* Sidebar con ancho relativo para dispositivos táctiles */
-        .sidebar { 
-            transition: transform 0.3s ease-in-out; 
-            width: 85%; 
-            max-width: 320px; 
-            position: fixed; 
-            inset: 0 auto 0 0; 
-            z-index: 300; 
-            background: white; 
-            border-right: 5px solid #1e3a8a; 
-            box-shadow: 10px 0 15px rgba(0,0,0,0.1);
-        }
+        .sidebar { transition: transform 0.3s ease-in-out; width: 85%; max-width: 320px; position: fixed; inset: 0 auto 0 0; z-index: 300; background: white; border-right: 5px solid #1e3a8a; box-shadow: 10px 0 15px rgba(0,0,0,0.1); }
         .sidebar.closed { transform: translateX(-100%); }
-
-        .content-main {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-        }
-
-        .scroll-area {
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Overlay de carga con prioridad alta */
-        #loading { 
-            display: flex;
-            transition: opacity 0.3s ease;
-        }
-
-        @media (max-width: 768px) {
-            .content-main { flex-direction: column; }
-            .cart-panel { width: 100% !important; height: 40%; border-left: 0; border-top: 2px solid #cbd5e1; }
-        }
+        .content-main { flex: 1; display: flex; overflow: hidden; }
+        .scroll-area { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        #loading { display: flex; transition: opacity 0.3s ease; }
+        @media (max-width: 768px) { .content-main { flex-direction: column; } .cart-panel { width: 100% !important; height: 40%; border-left: 0; border-top: 2px solid #cbd5e1; } }
     </style>
 </head>
 <body>
@@ -172,7 +100,7 @@
             <h2 class="font-black text-blue-900 uppercase italic">Turno Actual</h2>
             <button onclick="toggleSidebar()" class="text-4xl font-bold">&times;</button>
         </div>
-        <div id="corte-lista" class="flex-1 scroll-area text-[10px] font-bold text-slate-500 space-y-2"></div>
+        <div id="corte-lista" class="flex-1 overflow-y-auto text-[10px] font-bold text-slate-500 space-y-2"></div>
         <div class="p-4 bg-blue-900 rounded-2xl my-4 text-center">
             <div id="total-corte" class="text-yellow-400 text-3xl font-black">$0.00</div>
         </div>
@@ -180,59 +108,46 @@
     </div>
 
     <script>
-        const URL = "https://script.google.com/macros/s/AKfycbwVEqN8Imb33u2bYnLNoC3rWc-M7mqjjKDfhuOaoREMRwmF6dDUckYij71ZQfw4rQfR9Q/exec";
+        // URL ACTUALIZADA A V16.5
+        const URL = "https://script.google.com/macros/s/AKfycby_SJOxHiVBopVBXUzZSbO3Y3HXtSm_WWv0rMrLAYSM1Op0mXVPOX2Dk8wGkOltlDdpXg/exec";
+        
         let USERS = [], PRODS = [], carrito = [], vNom = "", vSuc = "", corte = {};
 
-        // INICIO CORREGIDO PARA EVITAR PANTALLA CARGANDO ETERNA
+        // Carga inicial [cite: 176, 177, 178, 179, 180, 181, 182]
         window.onload = async () => {
             try {
                 const res = await fetch(URL + "?action=getUsers");
                 if (!res.ok) throw new Error('Network error');
                 USERS = await res.json();
-                
                 document.getElementById('sel-u').innerHTML = USERS.map(u => `<option>${u.nombre}</option>`).join('');
-                
                 const memoU = localStorage.getItem('lastU'), memoS = localStorage.getItem('lastS');
                 if(memoU) document.getElementById('sel-u').value = memoU;
                 if(memoS) document.getElementById('sel-s').value = memoS;
-
                 const backup = localStorage.getItem('backup_venta');
                 if(backup) { carrito = JSON.parse(backup); actualizar(); }
-                
                 const backupCorte = localStorage.getItem('backup_corte');
                 if(backupCorte) { corte = JSON.parse(backupCorte); }
-
-            } catch (e) { 
-                console.error(e);
-                alert("Error al conectar con Matriz. Verifique su internet o la URL del script."); 
-            } finally {
-                // Siempre ocultamos el cargando al terminar el intento
-                document.getElementById('loading').style.opacity = '0';
-                setTimeout(() => document.getElementById('loading').style.display = 'none', 300);
-            }
+            } catch (e) { console.error(e); alert("Error al conectar con Matriz."); }
+            finally { document.getElementById('loading').style.opacity = '0'; setTimeout(() => document.getElementById('loading').style.display = 'none', 300); }
         };
 
+        // Login con agregado de botones dinámicos [cite: 183, 184, 185, 186, 187, 188]
         async function login() {
             const u = USERS.find(x => x.nombre.trim() == document.getElementById('sel-u').value.trim());
             if(u && u.pin.trim() == document.getElementById('pin').value.trim()) {
                 vNom = u.nombre; vSuc = document.getElementById('sel-s').value;
                 localStorage.setItem('lastU', vNom); localStorage.setItem('lastS', vSuc);
-                
                 if(vNom.toLowerCase() == "said") document.getElementById('admin-tools').classList.remove('hidden');
-                
                 document.getElementById('modal-login').style.display = 'none';
                 document.getElementById('v-nom').innerText = vNom; document.getElementById('v-suc').innerText = vSuc;
-                
-                document.getElementById('loading').style.display = 'flex';
-                document.getElementById('loading').style.opacity = '1';
-
+                document.getElementById('loading').style.display = 'flex'; document.getElementById('loading').style.opacity = '1';
                 try {
                     const res = await fetch(URL + "?action=getProducts");
                     PRODS = await res.json();
-                    PRODS.push({id:'REP', n:'REPARACIÓN/VAR', p:0}, {id:'GAS', n:'GASTO INTERNO', p:0});
+                    // ABONO INTEGRADO [cite: 187]
+                    PRODS.push({id:'ABONO', n:'ABONO CRÉDITO', p:0}, {id:'REP', n:'REPARACIÓN/VAR', p:0}, {id:'GAS', n:'GASTO INTERNO', p:0});
                     pintar();
                 } catch (e) { alert("Error al cargar productos."); }
-                
                 document.getElementById('loading').style.display = 'none';
             } else { alert("PIN Incorrecto."); }
         }
@@ -242,16 +157,19 @@
                 <div onclick="clickProd('${p.id}', '${p.n}', ${p.p})" class="product-card">
                     <div class="text-blue-600 font-black text-[10px] uppercase truncate">${p.id}</div>
                     <div class="text-[8px] font-bold text-slate-400 uppercase leading-none overflow-hidden h-6">${p.n}</div>
-                    <div class="text-blue-900 font-black text-[10px]">${p.id === 'GAS' || p.id === 'REP' ? 'VAR' : '$'+p.p}</div>
+                    <div class="text-blue-900 font-black text-[10px]">${['GAS', 'REP', 'ABONO'].includes(p.id) ? 'VAR' : '$'+p.p}</div>
                 </div>`).join('');
         }
 
+        // Manejo de clics con lógica de Abono [cite: 191, 192, 193, 194, 195]
         function clickProd(id, n, p) {
             if(id === 'GAS') {
-                const con = prompt("CONCEPTO:"), mon = prompt("MONTO:");
+                const con = prompt("CONCEPTO:"); const mon = prompt("MONTO:");
                 if(con && mon > 0) enviarManual({ tipo: "GASTO", vendedor: vNom, sucursal: vSuc, concepto: con, monto: parseFloat(mon) });
-            } else if(id === 'REP') {
-                const m = prompt("COSTO:"); if(m > 0) add(id, n, parseFloat(m));
+            } else if(id === 'REP' || id === 'ABONO') {
+                const msg = id === 'REP' ? "COSTO REPARACIÓN:" : "MONTO ABONO:";
+                const m = prompt(msg);
+                if(m > 0) add(id, n, parseFloat(m));
             } else { add(id, n, p); }
         }
 
@@ -275,15 +193,11 @@
         function abrirCobro() { if(carrito.length > 0) document.getElementById('modal-cobro').style.display = 'flex'; }
         function cerrarCobro() { document.getElementById('modal-cobro').style.display = 'none'; }
         function quickPay(n) { document.getElementById('pago-cliente').value = n; calcCambio(); }
-        
-        function calcCambio() {
-            const t = parseFloat(document.getElementById('t-v').innerText), p = parseFloat(document.getElementById('pago-cliente').value) || 0;
-            document.getElementById('cambio-v').innerText = (p - t > 0) ? (p - t).toFixed(2) : "0.00";
-        }
+        function calcCambio() { const t = parseFloat(document.getElementById('t-v').innerText), p = parseFloat(document.getElementById('pago-cliente').value) || 0; document.getElementById('cambio-v').innerText = (p - t > 0) ? (p - t).toFixed(2) : "0.00"; }
 
+        // Finalizar venta con persistencia de corte [cite: 206, 207, 208, 209, 210, 211, 212]
         async function finalizarVenta() {
-            document.getElementById('loading').style.display = 'flex';
-            document.getElementById('loading').style.opacity = '1';
+            document.getElementById('loading').style.display = 'flex'; document.getElementById('loading').style.opacity = '1';
             const agrupado = [];
             carrito.forEach(x => {
                 let item = agrupado.find(i => i.codigo === x.id);
@@ -302,29 +216,11 @@
             document.getElementById('loading').style.display = 'none';
         }
 
-        async function enviarManual(data) {
-            document.getElementById('loading').style.display = 'flex';
-            document.getElementById('loading').style.opacity = '1';
-            try { await fetch(URL, {method: 'POST', body: JSON.stringify(data)}); alert("✅ Registro Exitoso"); }
-            catch(e) { alert("Error al enviar datos."); }
-            document.getElementById('loading').style.display = 'none';
-        }
+        async function enviarManual(data) { document.getElementById('loading').style.display = 'flex'; document.getElementById('loading').style.opacity = '1'; try { await fetch(URL, {method: 'POST', body: JSON.stringify(data)}); alert("✅ Registro Exitoso"); } catch(e) { alert("Error al enviar datos."); } document.getElementById('loading').style.display = 'none'; }
+        async function ajusteInv(modo) { let d = { tipo: "AJUSTE_INV", modo: modo }; if(modo == "TRASPASO") { d.origen = prompt("Sucursal Origen (Navojoa/Huatabampo/Bodega):"); d.destino = prompt("Sucursal Destino (Navojoa/Huatabampo/Bodega):"); } else { d.ubicacion = prompt("Sucursal para movimiento:"); } d.codigo = prompt("Código:"); d.cantidad = prompt("Cantidad:"); if(d.codigo && d.cantidad) enviarManual(d); }
+        async function modalEquipo() { const m = prompt("Modelo:"), i = prompt("IMEI:"), n = prompt("Número:"), c = prompt("Cliente:"), e = prompt("Enganche:"); if(m && i) enviarManual({tipo: "EQUIPO", modelo: m, imei: i, numero: n, nombre: c, enganche: e, sucursal: vSuc}); }
 
-        async function ajusteInv(modo) {
-            let d = { tipo: "AJUSTE_INV", modo: modo };
-            if(modo == "TRASPASO") {
-                d.origen = prompt("Sucursal Origen (Navojoa/Huatabampo/Bodega):");
-                d.destino = prompt("Sucursal Destino (Navojoa/Huatabampo/Bodega):");
-            } else { d.ubicacion = prompt("Sucursal para movimiento:"); }
-            d.codigo = prompt("Código:"); d.cantidad = prompt("Cantidad:");
-            if(d.codigo && d.cantidad) enviarManual(d);
-        }
-
-        async function modalEquipo() {
-            const m = prompt("Modelo:"), i = prompt("IMEI:"), n = prompt("Número:"), c = prompt("Cliente:"), e = prompt("Enganche:");
-            if(m && i) enviarManual({tipo: "EQUIPO", modelo: m, imei: i, numero: n, nombre: c, enganche: e, sucursal: vSuc});
-        }
-
+        // Sidebar Corte [cite: 221, 222, 223]
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('closed');
             let h = "", t = 0;
@@ -336,11 +232,11 @@
             document.getElementById('total-corte').innerText = "$"+t.toFixed(2);
         }
 
+        // Enviar Corte Final [cite: 224, 225, 226, 227]
         async function enviarCorte() {
             const t = document.getElementById('total-corte').innerText.replace("$", "");
             if(confirm("¿Cerrar turno?")) {
-                document.getElementById('loading').style.display = 'flex';
-                document.getElementById('loading').style.opacity = '1';
+                document.getElementById('loading').style.display = 'flex'; document.getElementById('loading').style.opacity = '1';
                 try {
                     await fetch(URL, {method: 'POST', body: JSON.stringify({tipo: "VENTA", sucursal: vSuc, vendedor: vNom, items: [], corteX: t})});
                     localStorage.removeItem('backup_corte'); 
