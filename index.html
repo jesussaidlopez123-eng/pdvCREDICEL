@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Credicel POS V16.4 - Abonos</title>
+    <title>Credicel POS V16.7 - Abonos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Estilos base para estabilidad en Tablets [cite: 30-35] */
+        /* Estilos base para estabilidad en Tablets */
         html, body { height: 100%; margin: 0; padding: 0; background: #f1f5f9; font-family: ui-sans-serif, system-ui, sans-serif; overflow: hidden;}
         .app-container { display: flex; flex-direction: column; height: 100vh; height: -webkit-fill-available;}
         header { flex-shrink: 0; z-index: 50; padding-top: env(safe-area-inset-top, 0.75rem);}
@@ -110,11 +110,11 @@
     </div>
 
     <script>
-        // NUEVO URL ACTUALIZADO [cite: 57]
-        const URL = "https://script.google.com/macros/s/AKfycbwhoYoAskIDKaG5dXHWQPnd7fKQ4StNzf-D5cxycAX3ASSFZhPc77bUIwbi8VR9PXAjng/exec";
+        // NUEVA URL ACTUALIZADA
+        const URL = "https://script.google.com/macros/s/AKfycbxyV_vSl-9U1FXdI0ckTMrEmiOY2KbhzxL1fon372k6-xzumVqaRdCQwUNgEg1X70tabA/exec";
         let USERS = [], PRODS = [], carrito = [], vNom = "", vSuc = "", corte = {};
-
-        // Carga inicial [cite: 59-65]
+        
+        // Carga inicial 
         window.onload = async () => {
             try {
                 const res = await fetch(URL + "?action=getUsers");
@@ -128,15 +128,18 @@
                 if(backup) { carrito = JSON.parse(backup); actualizar(); }
                 const backupCorte = localStorage.getItem('backup_corte');
                 if(backupCorte) { corte = JSON.parse(backupCorte); }
-            } catch (e) { console.error(e); alert("Error al conectar con Matriz."); }
-            finally { document.getElementById('loading').style.opacity = '0'; setTimeout(() => document.getElementById('loading').style.display = 'none', 300); }
+            } catch (e) { console.error(e);
+            alert("Error al conectar con Matriz."); }
+            finally { document.getElementById('loading').style.opacity = '0';
+            setTimeout(() => document.getElementById('loading').style.display = 'none', 300); }
         };
-
-        // Login [cite: 66-72]
+        
+        // Login 
         async function login() {
             const u = USERS.find(x => x.nombre.trim() == document.getElementById('sel-u').value.trim());
             if(u && u.pin.trim() == document.getElementById('pin').value.trim()) {
-                vNom = u.nombre; vSuc = document.getElementById('sel-s').value;
+                vNom = u.nombre;
+                vSuc = document.getElementById('sel-s').value;
                 localStorage.setItem('lastU', vNom); localStorage.setItem('lastS', vSuc);
                 if(vNom.toLowerCase() == "said") document.getElementById('admin-tools').classList.remove('hidden');
                 document.getElementById('modal-login').style.display = 'none';
@@ -161,14 +164,15 @@
                 </div>`).join('');
         }
 
-        // Manejo de clics y productos especiales [cite: 74-78]
+        // Manejo de clics y productos especiales 
         function clickProd(id, n, p) {
             if(id === 'GAS') {
                 const con = prompt("CONCEPTO:");
                 const mon = prompt("MONTO:");
                 if(con && mon > 0) enviarManual({ tipo: "GASTO", vendedor: vNom, sucursal: vSuc, concepto: con, monto: parseFloat(mon) });
             } else if(id === 'REP' || id === 'ABONO') {
-                const msg = id === 'REP' ? "COSTO REPARACIÓN:" : "MONTO ABONO:";
+                const msg = id === 'REP' ?
+                "COSTO REPARACIÓN:" : "MONTO ABONO:";
                 const m = prompt(msg);
                 if(m > 0) add(id, n, parseFloat(m));
             } else { add(id, n, p); }
@@ -189,14 +193,21 @@
             document.getElementById('t-v').innerText = carrito.reduce((a, b) => a + b.p, 0).toFixed(2);
         }
 
-        function del(i) { carrito.splice(i, 1); localStorage.setItem('backup_venta', JSON.stringify(carrito)); actualizar(); }
-        function limpiarVenta() { carrito = []; localStorage.removeItem('backup_venta'); actualizar(); }
-        function abrirCobro() { if(carrito.length > 0) document.getElementById('modal-cobro').style.display = 'flex'; }
-        function cerrarCobro() { document.getElementById('modal-cobro').style.display = 'none'; }
-        function quickPay(n) { document.getElementById('pago-cliente').value = n; calcCambio(); }
-        function calcCambio() { const t = parseFloat(document.getElementById('t-v').innerText), p = parseFloat(document.getElementById('pago-cliente').value) || 0; document.getElementById('cambio-v').innerText = (p - t > 0) ? (p - t).toFixed(2) : "0.00"; }
+        function del(i) { carrito.splice(i, 1);
+        localStorage.setItem('backup_venta', JSON.stringify(carrito)); actualizar(); }
+        function limpiarVenta() { carrito = []; localStorage.removeItem('backup_venta'); actualizar();
+        }
+        function abrirCobro() { if(carrito.length > 0) document.getElementById('modal-cobro').style.display = 'flex';
+        }
+        function cerrarCobro() { document.getElementById('modal-cobro').style.display = 'none';
+        }
+        function quickPay(n) { document.getElementById('pago-cliente').value = n; calcCambio();
+        }
+        function calcCambio() { const t = parseFloat(document.getElementById('t-v').innerText), p = parseFloat(document.getElementById('pago-cliente').value) || 0;
+        document.getElementById('cambio-v').innerText = (p - t > 0) ? (p - t).toFixed(2) : "0.00";
+        }
 
-        // Finalizar venta con LOGICA MEJORADA para ABONOS [cite: 88-91]
+        // Finalizar venta con LOGICA MEJORADA para ABONOS 
         async function finalizarVenta() {
             document.getElementById('loading').style.display = 'flex';
             document.getElementById('loading').style.opacity = '1';
@@ -206,7 +217,8 @@
                 // MODIFICACION: Los ABONOS no se agrupan para registro individual en hoja ABONOS
                 if (x.id === 'ABONO') {
                     agrupado.push({codigo: x.id, cantidad: 1, precio: x.p});
-                } else {
+                } else 
+                {
                     let item = agrupado.find(i => i.codigo === x.id);
                     if(item) { item.cantidad++; item.precio += x.p; }
                     else { agrupado.push({codigo: x.id, cantidad: 1, precio: x.p}); }
@@ -215,7 +227,6 @@
                 if(!corte[x.id]) corte[x.id] = {cant: 0, total: 0};
                 corte[x.id].cant++; corte[x.id].total += x.p;
             });
-
             try {
                 const res = await fetch(URL, {method: 'POST', body: JSON.stringify({tipo: "VENTA", sucursal: vSuc, vendedor: vNom, items: agrupado})});
                 const result = await res.json();
@@ -225,22 +236,30 @@
                     localStorage.removeItem('backup_venta');
                     alert("✅ Registro Exitoso");
                     carrito = []; actualizar(); cerrarCobro();
-                } else { throw new Error(result.msg); }
-            } catch(e) { alert("Error de conexión. Se guardó respaldo local."); console.error(e); }
+                } else { throw new Error(result.msg);
+                }
+            } catch(e) { alert("Error de conexión. Se guardó respaldo local.");
+            console.error(e); }
             document.getElementById('loading').style.display = 'none';
         }
 
-        // Funciones manuales y Botón Equipo [cite: 95-102]
-        async function enviarManual(data) { document.getElementById('loading').style.display = 'flex'; document.getElementById('loading').style.opacity = '1'; try { await fetch(URL, {method: 'POST', body: JSON.stringify(data)}); alert("✅ Registro Exitoso"); } catch(e) { alert("Error al enviar datos."); } document.getElementById('loading').style.display = 'none'; }
+        // Funciones manuales y Botón Equipo 
+        async function enviarManual(data) { document.getElementById('loading').style.display = 'flex';
+        document.getElementById('loading').style.opacity = '1'; try { await fetch(URL, {method: 'POST', body: JSON.stringify(data)}); alert("✅ Registro Exitoso");
+        } catch(e) { alert("Error al enviar datos."); } document.getElementById('loading').style.display = 'none';
+        }
         
-        async function ajusteInv(modo) { let d = { tipo: "AJUSTE_INV", modo: modo }; if(modo == "TRASPASO") { d.origen = prompt("Sucursal Origen:"); d.destino = prompt("Sucursal Destino:"); } else { d.ubicacion = prompt("Sucursal:"); } d.codigo = prompt("Código:"); d.cantidad = prompt("Cantidad:"); if(d.codigo && d.cantidad) enviarManual(d); }
+        async function ajusteInv(modo) { let d = { tipo: "AJUSTE_INV", modo: modo };
+        if(modo == "TRASPASO") { d.origen = prompt("Sucursal Origen:"); d.destino = prompt("Sucursal Destino:"); } else { d.ubicacion = prompt("Sucursal:");
+        } d.codigo = prompt("Código:"); d.cantidad = prompt("Cantidad:"); if(d.codigo && d.cantidad) enviarManual(d);
+        }
         
         async function modalEquipo() { 
             const m = prompt("Modelo:"), i = prompt("IMEI:"), n = prompt("Número:"), c = prompt("Cliente:"), e = prompt("Enganche:");
             if(m && i) enviarManual({tipo: "EQUIPO", modelo: m, imei: i, numero: n, nombre: c, enganche: e, sucursal: vSuc, vendedor: vNom});
         }
 
-        // Sidebar y Corte [cite: 103-110]
+        // Sidebar y Corte 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('closed');
             let h = "", t = 0;
@@ -248,7 +267,8 @@
                 h += `<div class="flex justify-between border-b py-2 italic font-black uppercase"><span>${corte[id].cant}x ${id}</span><span>$${corte[id].total.toFixed(2)}</span></div>`;
                 t += corte[id].total;
             }
-            document.getElementById('corte-lista').innerHTML = h || "<p class='text-center py-10 opacity-30'>Vacío</p>";
+            document.getElementById('corte-lista').innerHTML = h ||
+            "<p class='text-center py-10 opacity-30'>Vacío</p>";
             document.getElementById('total-corte').innerText = "$"+t.toFixed(2);
         }
 
@@ -266,4 +286,3 @@
     </script>
 </body>
 </html>
-
