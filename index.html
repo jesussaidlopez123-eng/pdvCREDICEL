@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Credicel POS V16.7 - Abonos</title>
+    <title>Credicel POS V16.8 - Corte con Gastos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Estilos base para estabilidad en Tablets */
@@ -110,7 +110,7 @@
     </div>
 
     <script>
-        // NUEVA URL ACTUALIZADA
+        // URL ACTUALIZADA
         const URL = "https://script.google.com/macros/s/AKfycbxyV_vSl-9U1FXdI0ckTMrEmiOY2KbhzxL1fon372k6-xzumVqaRdCQwUNgEg1X70tabA/exec";
         let USERS = [], PRODS = [], carrito = [], vNom = "", vSuc = "", corte = {};
         
@@ -167,12 +167,21 @@
         // Manejo de clics y productos especiales 
         function clickProd(id, n, p) {
             if(id === 'GAS') {
-                const con = prompt("CONCEPTO:");
-                const mon = prompt("MONTO:");
-                if(con && mon > 0) enviarManual({ tipo: "GASTO", vendedor: vNom, sucursal: vSuc, concepto: con, monto: parseFloat(mon) });
+                const con = prompt("CONCEPTO DEL GASTO:");
+                const mon = prompt("MONTO DEL GASTO:");
+                if(con && mon > 0) {
+                    const gastoF = parseFloat(mon);
+                    enviarManual({ tipo: "GASTO", vendedor: vNom, sucursal: vSuc, concepto: con, monto: gastoF });
+                    
+                    // LÓGICA AGREGADA: Descontar gasto del corte local visualmente
+                    const gastoNombre = 'GAS: ' + con.toUpperCase().substring(0, 15);
+                    if(!corte[gastoNombre]) corte[gastoNombre] = {cant: 0, total: 0};
+                    corte[gastoNombre].cant++;
+                    corte[gastoNombre].total -= gastoF; // Resta en el total
+                    localStorage.setItem('backup_corte', JSON.stringify(corte));
+                }
             } else if(id === 'REP' || id === 'ABONO') {
-                const msg = id === 'REP' ?
-                "COSTO REPARACIÓN:" : "MONTO ABONO:";
+                const msg = id === 'REP' ? "COSTO REPARACIÓN:" : "MONTO ABONO:";
                 const m = prompt(msg);
                 if(m > 0) add(id, n, parseFloat(m));
             } else { add(id, n, p); }
@@ -207,18 +216,16 @@
         document.getElementById('cambio-v').innerText = (p - t > 0) ? (p - t).toFixed(2) : "0.00";
         }
 
-        // Finalizar venta con LOGICA MEJORADA para ABONOS 
+        // Finalizar venta
         async function finalizarVenta() {
             document.getElementById('loading').style.display = 'flex';
             document.getElementById('loading').style.opacity = '1';
             
             const agrupado = [];
             carrito.forEach(x => {
-                // MODIFICACION: Los ABONOS no se agrupan para registro individual en hoja ABONOS
                 if (x.id === 'ABONO') {
                     agrupado.push({codigo: x.id, cantidad: 1, precio: x.p});
-                } else 
-                {
+                } else {
                     let item = agrupado.find(i => i.codigo === x.id);
                     if(item) { item.cantidad++; item.precio += x.p; }
                     else { agrupado.push({codigo: x.id, cantidad: 1, precio: x.p}); }
@@ -236,8 +243,7 @@
                     localStorage.removeItem('backup_venta');
                     alert("✅ Registro Exitoso");
                     carrito = []; actualizar(); cerrarCobro();
-                } else { throw new Error(result.msg);
-                }
+                } else { throw new Error(result.msg); }
             } catch(e) { alert("Error de conexión. Se guardó respaldo local.");
             console.error(e); }
             document.getElementById('loading').style.display = 'none';
@@ -259,17 +265,20 @@
             if(m && i) enviarManual({tipo: "EQUIPO", modelo: m, imei: i, numero: n, nombre: c, enganche: e, sucursal: vSuc, vendedor: vNom});
         }
 
-        // Sidebar y Corte 
+        // Sidebar y Corte visual (Modificado para mostrar Gastos en negativo y en rojo)
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('closed');
             let h = "", t = 0;
             for(let id in corte) {
-                h += `<div class="flex justify-between border-b py-2 italic font-black uppercase"><span>${corte[id].cant}x ${id}</span><span>$${corte[id].total.toFixed(2)}</span></div>`;
+                let isNeg = corte[id].total < 0;
+                let colorClass = isNeg ? "text-red-500" : "text-slate-600";
+                let montoFormat = isNeg ? "-$" + Math.abs(corte[id].total).toFixed(2) : "$" + corte[id].total.toFixed(2);
+                
+                h += `<div class="flex justify-between border-b py-2 italic font-black uppercase ${colorClass}"><span>${corte[id].cant}x ${id}</span><span>${montoFormat}</span></div>`;
                 t += corte[id].total;
             }
-            document.getElementById('corte-lista').innerHTML = h ||
-            "<p class='text-center py-10 opacity-30'>Vacío</p>";
-            document.getElementById('total-corte').innerText = "$"+t.toFixed(2);
+            document.getElementById('corte-lista').innerHTML = h || "<p class='text-center py-10 opacity-30'>Vacío</p>";
+            document.getElementById('total-corte').innerText = t < 0 ? "-$" + Math.abs(t).toFixed(2) : "$" + t.toFixed(2);
         }
 
         async function enviarCorte() {
