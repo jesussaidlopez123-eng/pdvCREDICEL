@@ -3,119 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Credicel POS V17.4 - Professional Green Edition</title>
+    <title>Credicel POS V17.5 - Dark Mode Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Paleta de colores profesionales: Fondo Gris, Acentos Verdes Escala */
-        /* Fondos principales: bg-slate-100 (gris muy claro), bg-slate-200 (gris claro) */
-        /* Verdes: emerald-50, emerald-200, emerald-600, emerald-700, emerald-800, emerald-950 */
-
-        html, body { height: 100%; margin: 0; padding: 0; background: #e2e8f0; font-family: ui-sans-serif, system-ui, sans-serif; overflow: hidden;}
+        /* Modo Oscuro Vanguardista: Fondos Slate (Gris Profundo) y Acentos Esmeralda */
+        html, body { height: 100%; margin: 0; padding: 0; background: #0f172a; font-family: ui-sans-serif, system-ui, sans-serif; overflow: hidden; color: #f8fafc;}
         .app-container { display: flex; flex-direction: column; height: 100vh; height: -webkit-fill-available;}
         header { flex-shrink: 0; z-index: 50; padding-top: env(safe-area-inset-top, 0.75rem);}
         
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 0.8rem; padding: 1rem;}
-        /* Tarjetas de producto: fondo blanco puro para contraste profesional */
-        .product-card { transition: all 0.1s; border: 1px solid #cbd5e1; cursor: pointer; user-select: none; display: flex; flex-direction: column; justify-content: space-between; height: 135px; background: white; border-radius: 1rem; padding: 0.8rem; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
-        .product-card:active { transform: scale(0.95); background-color: #ecfdf5;} /* emerald-50 al hacer click */
         
-        /* Gradiente Verde Profesional y Sobrio para Header y Login */
-        .green-gradient { background: linear-gradient(135deg, #064e3b 0%, #10b981 100%);}
+        /* Tarjetas Modo Oscuro */
+        .product-card { transition: all 0.1s; border: 1px solid #334155; cursor: pointer; user-select: none; display: flex; flex-direction: column; justify-content: space-between; height: 135px; background: #1e293b; border-radius: 1rem; padding: 0.8rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);}
+        .product-card:active { transform: scale(0.95); background-color: #064e3b;}
         
-        /* Sidebar: Borde verde oscuro profesional */
-        .sidebar { transition: transform 0.3s ease-in-out; width: 85%; max-width: 350px; position: fixed; inset: 0 auto 0 0; z-index: 300; background: white; border-right: 5px solid #064e3b; box-shadow: 10px 0 15px rgba(0,0,0,0.1);}
+        /* Gradiente Oscuro Elegante para Header */
+        .dark-gradient { background: linear-gradient(135deg, #022c22 0%, #065f46 100%); border-bottom: 1px solid #047857;}
+        
+        /* Sidebar Oscuro */
+        .sidebar { transition: transform 0.3s ease-in-out; width: 85%; max-width: 350px; position: fixed; inset: 0 auto 0 0; z-index: 300; background: #1e293b; border-right: 5px solid #10b981; box-shadow: 10px 0 25px rgba(0,0,0,0.5);}
         .sidebar.closed { transform: translateX(-100%);}
         .content-main { flex: 1; display: flex; overflow: hidden;}
         .scroll-area { overflow-y: auto; -webkit-overflow-scrolling: touch;}
         #loading { display: flex; transition: opacity 0.3s ease;}
-        @media (max-width: 768px) { .content-main { flex-direction: column; } .cart-panel { width: 100% !important; height: 45%; border-left: 0; border-top: 3px solid #64748b;} } /* gris slate-500 */
+        
+        /* Scrollbar estilizado para modo oscuro */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        
+        @media (max-width: 768px) { .content-main { flex-direction: column; } .cart-panel { width: 100% !important; height: 45%; border-left: 0; border-top: 3px solid #334155;} }
     </style>
 </head>
-<body>
+<body class="bg-slate-900 text-slate-100">
 
-    <div id="loading" class="fixed inset-0 bg-black/70 z-[600] flex items-center justify-center text-white font-black uppercase text-center">
-        <div class="p-6 bg-white rounded-3xl text-emerald-950 shadow-2xl">
-            <div class="animate-spin h-12 w-12 border-4 border-emerald-800 border-t-transparent rounded-full mx-auto mb-4"></div>
+    <div id="loading" class="fixed inset-0 bg-slate-950/80 z-[600] flex items-center justify-center text-emerald-400 font-black uppercase text-center backdrop-blur-sm">
+        <div class="p-8 bg-slate-800 rounded-3xl border border-slate-700 shadow-2xl">
+            <div class="animate-spin h-12 w-12 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
             SINCRO MATRIZ...<br>
-            <span class="text-xs font-bold opacity-60 tracking-widest">Iniciando Sistema</span>
+            <span class="text-xs font-bold opacity-60 tracking-widest text-slate-300">Iniciando Sistema</span>
         </div>
     </div>
 
     <div class="app-container">
-        <header class="green-gradient text-white shadow-lg flex flex-wrap gap-3 items-center justify-between p-4">
+        <header class="dark-gradient text-white shadow-lg flex flex-wrap gap-3 items-center justify-between p-4">
             <div class="flex flex-wrap gap-3">
-                <button onclick="toggleSidebar()" class="bg-emerald-200 text-emerald-950 px-4 py-3 rounded-xl font-black text-xs uppercase shadow-md active:scale-90">CORTE</button>
-                <button onclick="modalEquipo()" class="bg-emerald-800 text-white px-4 py-3 rounded-xl font-black text-xs uppercase shadow-md active:scale-90">EQUIPO</button>
+                <button onclick="toggleSidebar()" class="bg-slate-800 border border-slate-600 text-emerald-400 hover:bg-slate-700 px-4 py-3 rounded-xl font-black text-xs uppercase shadow-md active:scale-90 transition">CORTE</button>
+                <button onclick="modalEquipo()" class="bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-3 rounded-xl font-black text-xs uppercase shadow-md active:scale-90 transition">EQUIPO</button>
                 <div id="admin-tools" class="hidden flex flex-wrap gap-2">
-                    <button onclick="ajusteInv('ENTRADA')" class="bg-emerald-600 px-4 py-3 rounded-xl font-black text-xs uppercase shadow-sm">Entrada</button>
-                    <button onclick="ajusteInv('SALIDA')" class="bg-red-700 px-4 py-3 rounded-xl font-black text-xs uppercase shadow-sm">Ajuste</button>
-                    <button onclick="ajusteInv('TRASPASO')" class="bg-emerald-600 px-4 py-3 rounded-xl font-black text-xs uppercase shadow-sm">Traspaso</button>
+                    <button onclick="ajusteInv('ENTRADA')" class="bg-slate-700 border border-slate-600 text-emerald-300 px-4 py-3 rounded-xl font-black text-xs uppercase shadow-sm">Entrada</button>
+                    <button onclick="ajusteInv('SALIDA')" class="bg-slate-700 border border-red-900 text-red-400 px-4 py-3 rounded-xl font-black text-xs uppercase shadow-sm">Ajuste</button>
+                    <button onclick="ajusteInv('TRASPASO')" class="bg-slate-700 border border-slate-600 text-emerald-300 px-4 py-3 rounded-xl font-black text-xs uppercase shadow-sm">Traspaso</button>
                 </div>
             </div>
             <div class="text-right">
-                <div id="v-nom" class="font-black uppercase text-xs leading-none"></div>
-                <div id="v-suc" class="font-bold text-emerald-200 text-[10px] uppercase mt-1"></div>
+                <div id="v-nom" class="font-black uppercase text-xs leading-none text-slate-100"></div>
+                <div id="v-suc" class="font-bold text-emerald-400 text-[10px] uppercase mt-1"></div>
             </div>
         </header>
 
         <div class="content-main">
-            <main class="flex-1 scroll-area">
+            <main class="flex-1 scroll-area bg-slate-900">
                 <div class="products-grid" id="grid"></div>
             </main>
 
-            <aside class="cart-panel w-96 bg-white border-l flex flex-col shadow-xl border-slate-300">
-                <div class="p-6 border-b text-center shrink-0 border-slate-200">
-                    <div class="text-4xl font-black text-emerald-700 leading-none mb-4">$<span id="t-v">0.00</span></div>
-                    <button onclick="abrirCobro()" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black text-2xl shadow-lg uppercase active:scale-95 transition">Cobrar</button>
-                    <button onclick="limpiarVenta()" class="mt-3 text-xs text-slate-400 font-bold underline uppercase">Limpiar Carrito</button>
+            <aside class="cart-panel w-96 bg-slate-800 border-l flex flex-col shadow-xl border-slate-700">
+                <div class="p-6 border-b text-center shrink-0 border-slate-700">
+                    <div class="text-5xl font-black text-emerald-400 leading-none mb-4 tracking-tight">$<span id="t-v">0.00</span></div>
+                    <button onclick="abrirCobro()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-5 rounded-2xl font-black text-2xl shadow-lg shadow-emerald-900/50 uppercase active:scale-95 transition">Cobrar</button>
+                    <button onclick="limpiarVenta()" class="mt-4 text-xs text-slate-500 hover:text-slate-300 font-bold underline uppercase transition">Limpiar Carrito</button>
                 </div>
-                <div id="carrito" class="flex-1 scroll-area p-3 space-y-2"></div>
+                <div id="carrito" class="flex-1 scroll-area p-3 space-y-2 bg-slate-800/50"></div>
             </aside>
         </div>
     </div>
 
-    <div id="modal-login" class="fixed inset-0 bg-white z-[400] flex items-center justify-center p-4">
-        <div class="w-full max-w-md border-4 border-emerald-800 p-8 rounded-2xl shadow-2xl text-center bg-white">
-            <h1 class="text-5xl font-black text-emerald-900 italic mb-8 uppercase">Credi<span class="text-emerald-400">cel</span></h1>
-            <select id="sel-u" class="w-full p-5 border-2 rounded-xl mb-4 font-bold text-xl text-slate-800 bg-slate-50 outline-none border-slate-300"></select>
-            <select id="sel-s" class="w-full p-5 border-2 rounded-xl mb-4 font-bold text-xl text-slate-800 bg-slate-50 outline-none border-slate-300">
+    <div id="modal-login" class="fixed inset-0 bg-slate-950/90 z-[400] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="w-full max-w-md border border-slate-700 p-8 rounded-3xl shadow-2xl text-center bg-slate-800">
+            <h1 class="text-5xl font-black text-white italic mb-8 uppercase tracking-wide">Credi<span class="text-emerald-500">cel</span></h1>
+            
+            <select id="sel-u" class="w-full p-5 border border-slate-600 rounded-xl mb-4 font-bold text-xl bg-slate-900 text-slate-200 outline-none focus:border-emerald-500 transition"></select>
+            
+            <select id="sel-s" class="w-full p-5 border border-slate-600 rounded-xl mb-4 font-bold text-xl bg-slate-900 text-slate-200 outline-none focus:border-emerald-500 transition">
                 <option>Navojoa</option><option>Huatabampo</option><option>Bodega</option>
             </select>
-            <input id="pin" type="password" inputmode="numeric" maxlength="6" class="w-full p-5 border-2 rounded-xl text-center text-3xl tracking-[15px] mb-6 outline-none border-slate-300 text-slate-800" placeholder="****">
-            <button onclick="login()" class="w-full green-gradient text-white py-6 rounded-2xl font-black text-xl uppercase shadow-lg active:scale-95 transition">Entrar al Sistema</button>
+            
+            <input id="pin" type="password" inputmode="numeric" maxlength="6" class="w-full p-5 border border-slate-600 rounded-xl text-center text-3xl tracking-[15px] mb-6 outline-none bg-slate-900 text-white placeholder-slate-600 focus:border-emerald-500 transition" placeholder="****">
+            
+            <button onclick="login()" class="w-full dark-gradient text-emerald-50 py-6 rounded-2xl font-black text-xl uppercase shadow-lg shadow-emerald-900/20 active:scale-95 transition">Entrar al Sistema</button>
         </div>
     </div>
 
-    <div id="modal-cobro" class="fixed inset-0 bg-slate-900/90 hidden items-center justify-center p-4 z-[500]">
-        <div class="bg-white rounded-2xl max-w-md w-full p-8 text-center shadow-2xl border-4 border-emerald-800">
-            <h2 class="text-3xl font-black mb-6 text-emerald-900 uppercase italic">Finalizar Cobro</h2>
+    <div id="modal-cobro" class="fixed inset-0 bg-slate-950/90 hidden items-center justify-center p-4 z-[500] backdrop-blur-sm">
+        <div class="bg-slate-800 rounded-3xl max-w-md w-full p-8 text-center shadow-2xl border border-slate-700">
+            <h2 class="text-3xl font-black mb-6 text-slate-100 uppercase italic">Finalizar Cobro</h2>
             <div class="grid grid-cols-3 gap-3 mb-6">
-                <button onclick="quickPay(100)" class="bg-slate-100 py-5 rounded-xl font-black text-xl text-slate-600 hover:bg-emerald-50 transition">$100</button>
-                <button onclick="quickPay(200)" class="bg-slate-100 py-5 rounded-xl font-black text-xl text-slate-600 hover:bg-emerald-50 transition">$200</button>
-                <button onclick="quickPay(500)" class="bg-slate-100 py-5 rounded-xl font-black text-xl text-slate-600 hover:bg-emerald-50 transition">$500</button>
+                <button onclick="quickPay(100)" class="bg-slate-700 py-5 rounded-xl font-black text-xl text-emerald-400 hover:bg-slate-600 transition">$100</button>
+                <button onclick="quickPay(200)" class="bg-slate-700 py-5 rounded-xl font-black text-xl text-emerald-400 hover:bg-slate-600 transition">$200</button>
+                <button onclick="quickPay(500)" class="bg-slate-700 py-5 rounded-xl font-black text-xl text-emerald-400 hover:bg-slate-600 transition">$500</button>
             </div>
-            <input type="number" id="pago-cliente" oninput="calcCambio()" class="w-full p-5 border-2 rounded-xl text-center text-4xl font-black mb-6 outline-none border-slate-300 text-slate-800" placeholder="0.00">
-            <div class="p-5 bg-emerald-200 rounded-xl mb-6 text-emerald-950 font-black">
-                <p class="text-xs uppercase opacity-70 leading-none mb-1">Cambio a entregar:</p>
+            
+            <input type="number" id="pago-cliente" oninput="calcCambio()" class="w-full p-5 border border-slate-600 rounded-xl text-center text-4xl font-black mb-6 outline-none bg-slate-900 text-white focus:border-emerald-500 transition" placeholder="0.00">
+            
+            <div class="p-5 bg-emerald-950 border border-emerald-800 rounded-xl mb-6 text-emerald-100 font-black">
+                <p class="text-xs uppercase opacity-70 leading-none mb-1 text-emerald-300">Cambio a entregar:</p>
                 <p class="text-5xl">$ <span id="cambio-v">0.00</span></p>
             </div>
-            <button onclick="finalizarVenta()" class="w-full py-5 bg-emerald-700 text-white rounded-xl font-black text-xl uppercase shadow-lg">Registrar Venta</button>
-            <button onclick="cerrarCobro()" class="mt-6 text-xs font-bold underline uppercase block mx-auto text-slate-500">Volver al carrito</button>
+            
+            <button onclick="finalizarVenta()" class="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black text-xl uppercase shadow-lg shadow-emerald-900/50 transition">Registrar Venta</button>
+            <button onclick="cerrarCobro()" class="mt-6 text-xs font-bold underline uppercase block mx-auto text-slate-400 hover:text-slate-200">Volver al carrito</button>
         </div>
     </div>
 
     <div id="sidebar" class="sidebar closed p-6 flex flex-col shadow-2xl">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="font-black text-xl text-emerald-900 uppercase italic">Resumen del Turno</h2>
-            <button onclick="toggleSidebar()" class="text-5xl font-bold text-slate-400 hover:text-red-700">&times;</button>
+            <h2 class="font-black text-xl text-slate-100 uppercase italic">Resumen Turno</h2>
+            <button onclick="toggleSidebar()" class="text-5xl font-bold text-slate-500 hover:text-emerald-400 transition">&times;</button>
         </div>
-        <div id="corte-lista" class="flex-1 scroll-area text-xs font-bold text-slate-500 space-y-3"></div>
-        <div class="p-5 bg-emerald-900 rounded-3xl my-4 text-left" id="total-corte"></div>
-        <button onclick="enviarCorte()" class="w-full bg-red-600 text-white py-5 rounded-xl font-black uppercase text-sm shadow-lg">Cerrar Turno Oficial</button>
+        <div id="corte-lista" class="flex-1 scroll-area text-xs font-bold text-slate-400 space-y-3"></div>
+        
+        <div class="p-5 bg-slate-900 border border-slate-700 rounded-3xl my-4 text-left" id="total-corte"></div>
+        
+        <button onclick="enviarCorte()" class="w-full bg-red-900 hover:bg-red-800 border border-red-700 text-red-100 py-5 rounded-xl font-black uppercase text-sm shadow-lg transition">Cerrar Turno Oficial</button>
     </div>
 
     <script>
-        // --- LA URL SE MANTIENE INTACTA ---
+        // URL de Apps Script (Mantenida intacta)
         const URL = "https://script.google.com/macros/s/AKfycbyNEFuO2yvcUQ7FRaS0vdKzly0g3xAa5yE3rJYZg4lOXiR1ZoDmi2zqoMMg9m-wAdQUYg/exec";
         
         let USERS = [], PRODS = [], carrito = [], vNom = "", vSuc = "", corte = {};
@@ -171,12 +184,12 @@
         }
 
         function pintar() {
-            // Textos en escala de verdes profesionales: ID (emerald-700), Precio (emerald-900)
+            // Textos Modo Oscuro: ID (emerald-400), Nombre (slate-400), Precio (emerald-300)
             document.getElementById('grid').innerHTML = PRODS.map(p => `
-                <div onclick="clickProd('${p.id}', '${p.n}', ${p.p})" class="product-card border border-slate-200">
-                    <div class="text-emerald-700 font-black text-xs uppercase truncate">${p.id}</div>
-                    <div class="text-[10px] font-bold text-slate-600 uppercase leading-tight overflow-hidden h-8">${p.n}</div>
-                    <div class="text-emerald-900 font-black text-sm">${['GAS', 'REP', 'ABONO', 'RECARGA'].includes(p.id) ? 'VAR' : '$'+p.p}</div>
+                <div onclick="clickProd('${p.id}', '${p.n}', ${p.p})" class="product-card">
+                    <div class="text-emerald-400 font-black text-xs uppercase truncate tracking-wide">${p.id}</div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase leading-tight overflow-hidden h-8">${p.n}</div>
+                    <div class="text-emerald-300 font-black text-sm">${['GAS', 'REP', 'ABONO', 'RECARGA'].includes(p.id) ? 'VAR' : '$'+p.p}</div>
                 </div>`).join('');
         }
 
@@ -226,11 +239,11 @@
         }
 
         function actualizar() {
-            // Textos más grandes en el carrito, Borde Verde Profesional emerald-600, Botón Eliminar Rojo red-600
+            // Elementos del carrito en Modo Oscuro
             document.getElementById('carrito').innerHTML = carrito.map((item, i) => `
-                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl text-[11px] border-l-4 border-emerald-600 mb-2 shadow-sm">
-                    <span class="font-bold truncate w-48 uppercase text-slate-700">${item.n}</span>
-                    <button onclick="del(${i})" class="text-red-600 text-2xl font-black px-2 hover:scale-110 active:scale-90 transition">&times;</button>
+                <div class="flex justify-between items-center bg-slate-700/50 p-3 rounded-xl text-[11px] border-l-4 border-emerald-500 mb-2 shadow-sm">
+                    <span class="font-bold truncate w-48 uppercase text-slate-200">${item.n}</span>
+                    <button onclick="del(${i})" class="text-red-400 hover:text-red-300 text-2xl font-black px-2 hover:scale-110 active:scale-90 transition">&times;</button>
                 </div>`).join('');
             document.getElementById('t-v').innerText = carrito.reduce((a, b) => a + b.p, 0).toFixed(2);
         }
@@ -327,12 +340,11 @@
                 let isReparacion = id === 'REPARACION';
                 let isNeg = corte[id].total < 0;
                 
-                // Escala de Verdes Profesionales para la lista de Corte:
-                // GAS (red-600), ABONO (emerald-500), RECARGA/REP (verde profesional), Normal (slate-600)
-                let colorClass = isGas ? "text-red-700" : (isAbono ? "text-emerald-500" : (isRecarga ? "text-teal-600" : (isReparacion ? "text-emerald-600" : "text-slate-600")));
+                // Colores adaptados para destacar sobre fondo oscuro
+                let colorClass = isGas ? "text-red-400" : (isAbono ? "text-emerald-400" : (isRecarga ? "text-teal-400" : (isReparacion ? "text-emerald-300" : "text-slate-300")));
                 let montoFormat = isNeg ? "-$" + Math.abs(corte[id].total).toFixed(2) : "$" + corte[id].total.toFixed(2);
                 
-                h += `<div class="flex justify-between border-b py-3 italic font-black uppercase text-xs ${colorClass} border-slate-200"><span>${corte[id].cant}x ${id}</span><span>${montoFormat}</span></div>`;
+                h += `<div class="flex justify-between border-b py-3 italic font-black uppercase text-xs ${colorClass} border-slate-700"><span>${corte[id].cant}x ${id}</span><span>${montoFormat}</span></div>`;
                 
                 if(isGas) { tGastos += Math.abs(corte[id].total); }
                 else if(isAbono) { tAbonos += corte[id].total; }
@@ -345,16 +357,16 @@
 
             document.getElementById('corte-lista').innerHTML = h || "<p class='text-center py-10 opacity-30 text-sm'>Aún no hay movimientos</p>";
             
-            // Desglose Visual en Verdes Profesionales (emerald-300 para contraste en fondo oscuro)
+            // Desglose Visual Panel Final
             let breakdownHTML = `
-                <div class="text-xs text-white opacity-80 flex justify-between uppercase mb-2"><span>Accesorios:</span><span>$${tVentas.toFixed(2)}</span></div>
-                <div class="text-xs text-emerald-400 flex justify-between uppercase mb-2"><span>Reparaciones:</span><span>$${tReparaciones.toFixed(2)}</span></div>
+                <div class="text-xs text-slate-300 flex justify-between uppercase mb-2"><span>Accesorios:</span><span>$${tVentas.toFixed(2)}</span></div>
+                <div class="text-xs text-emerald-300 flex justify-between uppercase mb-2"><span>Reparaciones:</span><span>$${tReparaciones.toFixed(2)}</span></div>
                 <div class="text-xs text-emerald-400 flex justify-between uppercase mb-2"><span>Abonos:</span><span>$${tAbonos.toFixed(2)}</span></div>
                 <div class="text-xs text-teal-400 flex justify-between uppercase mb-2"><span>Recargas:</span><span>$${tRecargas.toFixed(2)}</span></div>
                 <div class="text-xs text-red-400 flex justify-between uppercase mb-3"><span>Gastos:</span><span>-$${tGastos.toFixed(2)}</span></div>
            
-                <div class="border-t border-emerald-700 pt-3 text-xs text-white font-bold uppercase tracking-wider text-center mt-3">Efectivo Total Físico</div>
-                <div class="text-emerald-300 text-4xl font-black text-center mt-2">$${tTotalCaja.toFixed(2)}</div>
+                <div class="border-t border-slate-600 pt-3 text-xs text-slate-200 font-bold uppercase tracking-wider text-center mt-3">Efectivo Total Físico</div>
+                <div class="text-emerald-400 text-4xl font-black text-center mt-2">$${tTotalCaja.toFixed(2)}</div>
             `;
             document.getElementById('total-corte').innerHTML = breakdownHTML;
             window.cortePuro = tVentas.toFixed(2);
