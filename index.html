@@ -128,8 +128,8 @@
     </div>
 
     <script>
-        // URL de Apps Script (Mantenida intacta)
-        const URL = "https://script.google.com/macros/s/AKfycbyNEFuO2yvcUQ7FRaS0vdKzly0g3xAa5yE3rJYZg4lOXiR1ZoDmi2zqoMMg9m-wAdQUYg/exec";
+        // --- URL ACTUALIZADA AQUÍ ---
+        const URL = "https://script.google.com/macros/s/AKfycbzVXzZYBcT-7zW1oBSOO2fduwtZZSciQv5-h1nA5XAvqItPF2JwRQVHiNR51JP92NP5cg/exec";
         
         let USERS = [], PRODS = [], carrito = [], vNom = "", vSuc = "", corte = {};
         
@@ -184,7 +184,6 @@
         }
 
         function pintar() {
-            // Textos Modo Oscuro: ID (emerald-400), Nombre (slate-400), Precio (emerald-300)
             document.getElementById('grid').innerHTML = PRODS.map(p => `
                 <div onclick="clickProd('${p.id}', '${p.n}', ${p.p})" class="product-card">
                     <div class="text-emerald-400 font-black text-xs uppercase truncate tracking-wide">${p.id}</div>
@@ -239,7 +238,6 @@
         }
 
         function actualizar() {
-            // Elementos del carrito en Modo Oscuro
             document.getElementById('carrito').innerHTML = carrito.map((item, i) => `
                 <div class="flex justify-between items-center bg-slate-700/50 p-3 rounded-xl text-[11px] border-l-4 border-emerald-500 mb-2 shadow-sm">
                     <span class="font-bold truncate w-48 uppercase text-slate-200">${item.n}</span>
@@ -340,7 +338,6 @@
                 let isReparacion = id === 'REPARACION';
                 let isNeg = corte[id].total < 0;
                 
-                // Colores adaptados para destacar sobre fondo oscuro
                 let colorClass = isGas ? "text-red-400" : (isAbono ? "text-emerald-400" : (isRecarga ? "text-teal-400" : (isReparacion ? "text-emerald-300" : "text-slate-300")));
                 let montoFormat = isNeg ? "-$" + Math.abs(corte[id].total).toFixed(2) : "$" + corte[id].total.toFixed(2);
                 
@@ -357,7 +354,6 @@
 
             document.getElementById('corte-lista').innerHTML = h || "<p class='text-center py-10 opacity-30 text-sm'>Aún no hay movimientos</p>";
             
-            // Desglose Visual Panel Final
             let breakdownHTML = `
                 <div class="text-xs text-slate-300 flex justify-between uppercase mb-2"><span>Accesorios:</span><span>$${tVentas.toFixed(2)}</span></div>
                 <div class="text-xs text-emerald-300 flex justify-between uppercase mb-2"><span>Reparaciones:</span><span>$${tReparaciones.toFixed(2)}</span></div>
